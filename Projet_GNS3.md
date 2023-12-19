@@ -26,7 +26,7 @@ Router(config-if)# ipv6 ospf _process-id_ area _area-id_
 # Configuration BGP
 
 Router(config)# router bgp _as-number_
-Router(config-router)# no bgp default ipv4-unicast$
+Router(config-router)# no bgp default ipv4-unicast 
 Device(config-router)# bgp router-id _X.X.X.X_
 ## Pour établir la session entre deux voisins
 Router(config-router)# neighbor _ipv6-address_ remote-as _as-number_
