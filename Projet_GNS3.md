@@ -47,5 +47,3 @@ Router(config-router-af)# neighbor _ipv6-address_ route-map _map-tag_ {in|out}
 Router(config-route-map)# set local-preference _local_preference_value_
 ### AS path prepending
 Router(config-route-map)# set as-path prepend x*_YOUR_AS_NUMBER_
-
-### Test GitHub
