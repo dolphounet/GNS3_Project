@@ -7,6 +7,9 @@ Router(config)# interface _interface name_
 Router(config-if)# ipv6 enable
 Router(config-if)# ipv6 address _ipv6-address_/_prefix-length_
 Router(config-if)# no shutdown
+
+## Effacer les routes
+
 # Configuration RIP
 
 Router(config)# ipv6 router rip _process name_
