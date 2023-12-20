@@ -9,10 +9,16 @@ def RIP_if(network, router, interface):
     pass
 
 def RIP(network, router):
-    pass
+    config = "ipv6 router rip BeginRIP\n redistribute connected"
+    return config
 
 def OSPF(network, router):
-    pass
+    router-id = f"{network["routers"][router-1]["name"]}.{network["routers"][router-1]["name"]}.{network["routers"][router-1]["name"]}.{network["routers"][router-1]["name"]}"
+    config = f"router ospf 10\n router-id {router-id}"
+    return config
+
+def BGP(network, router):
+    config = f"router bgp {network["routers"][router-1]["name"]}\n no default ipv4-unicast\n "
 
 def config_router(network, router, router_cfg):
     config = ""
