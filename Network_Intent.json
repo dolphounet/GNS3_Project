@@ -5,54 +5,54 @@
             "name": 1,
             "AS": 1,
             "interface": [
-                ["None","GigabitEthernet1/0"],
-                ["2","GigabitEthernet2/0"],
-                ["None","FastEthernet0/0"]
+                [[],"GigabitEthernet1/0"],
+                [[2],"GigabitEthernet2/0"],
+                [[],"FastEthernet0/0"]
             ]
         },
         {
             "name": 2,
             "AS": 1,
             "interface": [
-                ["3","GigabitEthernet1/0"],
-                ["1","GigabitEthernet2/0"],
-                ["None","FastEthernet0/0"]
+                [[3],"GigabitEthernet1/0"],
+                [[1],"GigabitEthernet2/0"],
+                [[],"FastEthernet0/0"]
             ]
         },
         {
             "name": 3,
             "AS": 1,
             "interface": [
-                ["2","GigabitEthernet1/0"],
-                ["None","GigabitEthernet2/0"],
-                ["4","FastEthernet0/0"]
+                [[2],"GigabitEthernet1/0"],
+                [[],"GigabitEthernet2/0"],
+                [[4],"FastEthernet0/0"]
             ]
         },
         {
             "name": 4,
             "AS": 2,
             "interface": [
-                ["5","GigabitEthernet1/0"],
-                ["None","GigabitEthernet2/0"],
-                ["3","FastEthernet0/0"]
+                [[5],"GigabitEthernet1/0"],
+                [[],"GigabitEthernet2/0"],
+                [[3],"FastEthernet0/0"]
             ]
         },
         {
             "name": 5,
             "AS": 2,
             "interface": [
-                ["4","GigabitEthernet1/0"],
-                ["6","GigabitEthernet2/0"],
-                ["None","FastEthernet0/0"]
+                [[4],"GigabitEthernet1/0"],
+                [[6],"GigabitEthernet2/0"],
+                [[],"FastEthernet0/0"]
             ]
         },
         {
             "name": 6,
             "AS": 2,
             "interface": [
-                ["None","GigabitEthernet1/0"],
-                ["5","GigabitEthernet2/0"],
-                ["None","FastEthernet0/0"]
+                [[],"GigabitEthernet1/0"],
+                [[5],"GigabitEthernet2/0"],
+                [[],"FastEthernet0/0"]
             ]
         }
     ],
@@ -60,14 +60,14 @@
     "AS" : [
         {
             "ASName": 1,
-            "networkIP": "2001:200:200:10::/64",
-            "loopbackNetworkIP": "2001:200:200:11::/64",
+            "networkIP": ["2001:200:200:10::","/64"],
+            "loopbackNetworkIP": ["2001:200:200:11::","/64"],
             "IGP": ["RIP"]
         },
         {
             "ASName": 2,
-            "networkIP": "2001:200:200:20::/64",
-            "loopbackNetworkIP": "2001:200:200:21::/64",
+            "networkIP": ["2001:200:200:20::","/64"],
+            "loopbackNetworkIP": ["2001:200:200:21::","/64"],
             "IGP": ["OSPF"]
         }
     ]
