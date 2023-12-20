@@ -1,5 +1,5 @@
 def addressing_if(network, router, interface):
-    return 0 #string avec la commande à mettre dans la configuration de l'interface
+    pass 
 
 def OSPF_if(network, router, interface):
     pass
@@ -15,11 +15,17 @@ def OSPF(network, router):
     pass
 
 def config_router(network, router, router_cfg):
-    config_if = ""
+    config = ""
     for interface in network["routers"][router-1]["interface"]:
-        if interface[0] != None:
-            config_if += f"interface {interface[1]}\n{addressing_if(network, router, interface)}{OSPF_if(network, router, interface)}{RIP_if(network, router, interface)}"
+        if interface[0] != []:
+            config += f"interface {interface[1]}\n no ip address\n negotiation auto\n{addressing_if(network, router, interface)}{OSPF_if(network, router, interface)}{RIP_if(network, router, interface)}"
         else:
-            config_if += f"interface {interface[1]}\n no ip address\n shutdown\n negotiation auto\n"
+            config += f"interface {interface[1]}\n no ip address\n shutdown\n negotiation auto\n"
 
-    pass
+    if "RIP" in network["AS"][network["router"][router-1]["AS"]-1]["IGP"]:
+        config += RIP(network, router)
+
+    if "OSPF" in network["AS"][network["router"][router-1]["AS"]-1]["IGP"]:
+        config += OSPF(network, router)
+
+    return config
