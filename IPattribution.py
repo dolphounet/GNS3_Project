@@ -1,0 +1,2 @@
+def hahalolcestpastafonctionmdr():
+    pass

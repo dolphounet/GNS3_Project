@@ -8,11 +8,18 @@ def OSPF_if(network, router, interface):
 def RIP_if(network, router, interface):
     pass
 
+def RIP(network, router):
+    pass
+
+def OSPF(network, router):
+    pass
+
 def config_router(network, router, router_cfg):
     config_if = ""
-    for interface in network["routers"][router+1]["interface"]:
+    for interface in network["routers"][router-1]["interface"]:
         if interface[0] != None:
             config_if += f"interface {interface[1]}\n{addressing_if(network, router, interface)}{OSPF_if(network, router, interface)}{RIP_if(network, router, interface)}"
         else:
             config_if += f"interface {interface[1]}\n no ip address\n shutdown\n negotiation auto\n"
+
     pass
