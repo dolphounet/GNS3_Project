@@ -21,4 +21,4 @@ def createMatAdj(network):
                 if interface[0][i] != []:
                     adjMat[router["name"]-1][interface[0][i]-1] = 1
 
-    return adjMat
+    network["adjMatrix"] = adjMat
