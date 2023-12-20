@@ -1,0 +1,47 @@
+{
+    
+    "routers": [
+        {
+            "name": 1,
+            "AS": 1,
+            "interface": [
+                ["2","nomInterface1"],
+                ["1","nomInterface2"],
+                ["None","nomInterface3"]
+            ]
+        },
+        {
+            "name": 2,
+            "AS": 1,
+            "interface": [
+                ["2","nomInterface1"],
+                ["1","nomInterface2"],
+                ["None","nomInterface3"]
+            ]
+        },
+        {
+            "name": 3,
+            "AS": 1,
+            "interface": [
+                ["2","nomInterface1"],
+                ["1","nomInterface2"],
+                ["None","nomInterface3"]
+            ]
+        }
+    ],
+
+    "AS" : [
+        {
+            "ASName": 1,
+            "networkIP": "2001:200:200:10::/64",
+            "loopbackNetworkIP": "2001:200:200:11::/64",
+            "IGP": ["RIP"]
+        },
+        {
+            "ASName": 2,
+            "networkIP": "2001:200:200:20::/64",
+            "loopbackNetworkIP": "2001:200:200:21::/64",
+            "IGP": ["OSPF"]
+        }
+    ]
+}
