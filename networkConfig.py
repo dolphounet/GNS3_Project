@@ -24,6 +24,7 @@ def OSPF(network, router):
     return config
 
 def BGP(network, router):
+    eBGP = False
     router-id = f"{network["routers"][router-1]["name"][0]}.{network["routers"][router-1]["name"][0]}.{network["routers"][router-1]["name"][0]}.{network["routers"][router-1]["name"][0]}"
     config = f"router bgp {network["routers"][router-1]["name"]}\n no default ipv4-unicast\n bgp router-id {router-id}\n"
     neighbor_addresses = []
@@ -41,6 +42,8 @@ def BGP(network, router):
     config += " address-family ipv6 unicast\n"
     for neighbor_address in neighbor_addresses:
         config += f"  neighbor {neighbor_address} activate\n"
+        for subNet in network["AS"][network["routers"][router-1]["AS"]-1]["subNet"]:
+            config += f"  network {"".join(subNet)}\n"
 
 
 def config_router(network, router, router_cfg):
