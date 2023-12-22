@@ -1,5 +1,5 @@
 from filesIO import read_from_json
-from IPattribution import findAdjacency, createLinks
+from IPattribution import findAdjacency, createLinks,attributeIP
 
 
 def main():
@@ -7,10 +7,11 @@ def main():
     for router in network["routers"]:
         print(router)
 
-    findAdjacency(network)
+    attributeIP(network)
+    #findAdjacency(network)
     print(network["adjDic"])
     
-    createLinks(network)
+    #createLinks(network)
 
 if __name__ == "__main__":
     main()
