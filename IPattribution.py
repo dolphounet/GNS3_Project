@@ -6,19 +6,14 @@ def attributionIP(network):
 def createMatAdj(network):
 
     N = len(network["routers"])
-    adjMat = []
-
-    for i in range(0,N):
-        adjMat.append([])
-        for j in range(0,N):
-            adjMat[i].append(0)
+    adjDic = {}
 
     for router in network["routers"]:
+        adjDic[str(router["ID"][0])]=[]
 
         for interface in router["interface"]:
-
             for i in range(0,len(interface[0])):
                 if interface[0][i] != []:
-                    adjMat[router["name"]-1][interface[0][i]-1] = 1
+                    adjDic[str(router["ID"][0])].append(interface[0][i])
 
-    network["adjMatrix"] = adjMat
+    network["adjDic"] = adjDic

@@ -10,5 +10,5 @@ Membres :
 
 ## Network_Intent
 
-1. Router names must be positive integers, their value starts by one.
+1. Router ID is a list of a unique integer used to identify the router in the programm, and a string corresponding to the hostname (The hostnames aren't necessarily uniques).
 2. AS numbers must be positive integers, their value starts by one.
