@@ -1,8 +1,5 @@
 import filesIO
 
-def attributionIP(network):
-    pass
-
 def findAdjacency(network):
     adjDic = {}
 
@@ -19,18 +16,31 @@ def findAdjacency(network):
     return
 
 def createLinks(network):
-    visited = []
 
-    linkCountAS = []
+    ASlinks = []
     for i in range(0,len(network["AS"])):
-        linkCountAS.append(0)
+        ASlinks.append({ "Count":0, "Links":[] })
+        network["AS"][i]["subNets"] = []
 
+    visited = []
     for routerID in network["adjDic"] :
         visited.append(routerID)
-
         for connectedRouter in network["adjDic"][routerID]:
             if (network["routers"][connectedRouter-1]["AS"] == network["routers"][routerID-1]["AS"]) and (connectedRouter not in visited):
-                
-                linkCountAS[network["routers"][routerID-1]["AS"]-1] += 1
+                ASlinks[network["routers"][routerID-1]["AS"]-1]["Count"] += 1
+                ASlinks[network["routers"][routerID-1]["AS"]-1]["Links"].append([routerID,connectedRouter])
 
+    for j in range(0,len(ASlinks)):
+        for k in range(0,ASlinks[j]["Count"]):
+            Subnet = network["AS"][j]["networkIP"][0]
+            network["AS"][j]["subNets"].append([Subnet[:len(Subnet)-1] + str(k+1) + "::",network["AS"][j]["networkIP"][1]])
+
+    return ASlinks
+
+def attributeIP(network):
+
+    findAdjacency(network)
+    ASlinks = createLinks(network)
+
+    return
     
