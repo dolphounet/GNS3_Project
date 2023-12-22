@@ -25,7 +25,6 @@ def OSPF(network, router):
     return config
 
 def BGP(network, router):
-    eBGP = False
     routerId = f"{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}"
     config = f"router bgp {network['routers'][router-1]['name']}\n no default ipv4-unicast\n bgp router-id {routerId}\n"
     neighbor_addresses = []
@@ -40,15 +39,16 @@ def BGP(network, router):
             neighbor_addresses.append(neighbor_address)
         else:
             pass
-    config += " address-family ipv6 unicast\n"
+    config += " !\n address-family ipv4\n exit-address-family\n !\n address-family ipv6 unicast\n"
     for neighbor_address in neighbor_addresses:
         config += f"  neighbor {neighbor_address} activate\n"
-        for subNet in network["AS"][network["routers"][router-1]["AS"]-1]["subNet"]:
-            config += f"  network {''.join(subNet)}\n"
-
+    for subNet in network["AS"][network["routers"][router-1]["AS"]-1]["subNet"]:
+        config += f"  network {''.join(subNet)}\n"
+    config += " exit-address-family\n"
+    return config 
 
 def config_router(network, router):
-    config = ""
+    config = f"!\n!\n!\n!\n\n!\n! Last configuration change at 16:58:26 UTC Tue Dec 19 2023\n!\nversion 15.2\nservice timestamps debug datetime msec\nservice timestamps log datetime msec\n!\nhostname {network['routers'][router-1]['ID'][1]}\n!\nboot-start-marker\nboot-end-marker\n!\n!\n!\nno aaa new-model\nno ip icmp rate-limit unreachable\nip cef\n!\n!\n!\n!\n!\n!\nno ip domain lookup\nipv6 unicast-routing\nipv6 cef\n!\n!\nmultilink bundle-name authenticated\n!\n!\n!\n!\n!\n!\n!\n!\n!\nip tcp synwait-time 5\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n"
     for interface in network["routers"][router-1]["interface"]:
         if interface[0] != []:
             config += f"interface {interface[1]}\n no ip address\n negotiation auto\n{addressing_if(network, router, interface)}"
