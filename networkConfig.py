@@ -1,9 +1,8 @@
 def addressing_if(network, router, interface):
-    config = f"interface {interface}\n ipv6 enable\n "
     for interf in network["router"][router-1]["interface"]:
         if interf[1] == interface:
             address = "".join(interf[2])
-    config += "ipv6 address {address}\n!\n"
+    config = " ipv6 address {address}\n"
     return config
 
 def OSPF_if(network, router, interface):
@@ -29,7 +28,15 @@ def config_router(network, router, router_cfg):
     config = ""
     for interface in network["routers"][router-1]["interface"]:
         if interface[0] != []:
-            config += f"interface {interface[1]}\n no ip address\n negotiation auto\n{addressing_if(network, router, interface)}{OSPF_if(network, router, interface)}{RIP_if(network, router, interface)}\n!\n"
+            config += f"interface {interface[1]}\n no ip address\n negotiation auto\n{addressing_if(network, router, interface)}"
+        
+            if "RIP" in network["AS"][network["router"][router-1]["AS"]-1]["IGP"]:
+                config += RIP_if(network, router)
+
+            if "OSPF" in network["AS"][network["router"][router-1]["AS"]-1]["IGP"]:
+                config += OSPF_if(network, router)
+
+            config += "!\n"
         else:
             config += f"interface {interface[1]}\n no ip address\n shutdown\n negotiation auto\n!\n"
 
