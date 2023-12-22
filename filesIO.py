@@ -1,10 +1,12 @@
 import json
 
-def read_from_json(file):
+def readJson(file):
     Network_Intent = open(file)
     network = json.load(Network_Intent)
     Network_Intent.close
     return network
 
-def write_to_cfg(file):
-    pass
+def writeCfg(file, config):
+    with open(file, "w") as configFile:
+        configFile.write(config)
+    return
