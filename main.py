@@ -1,15 +1,14 @@
-from filesIO import read_from_json
-from IPattribution import findAdjacency, createLinks,attributeIP
+from filesIO import readJson, writeCfg
+from IPattribution import attributeIP
+from networkConfig import config_router
 
 
 def main():
-    network = read_from_json('Network_intent.json')
-    for router in network["routers"]:
-        print(router)
-
+    network = readJson('Network_Intent.json')
     attributeIP(network)
     #findAdjacency(network)
-    print(network["adjDic"])
+    print(network["AS"])
+    writeCfg("config_R1", config_router(network, 5))
     
     #createLinks(network)
 
