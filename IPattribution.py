@@ -19,7 +19,7 @@ def createLinks(network):
 
     ASlinks = []
     for i in range(0,len(network["AS"])):
-        ASlinks.append({ "Count":0, "Links":[] })
+        ASlinks.append({ "Count":0, "Links":[],"RouterList":[] })
         network["AS"][i]["subNets"] = []
 
     visited = []
@@ -34,6 +34,18 @@ def createLinks(network):
         for k in range(0,ASlinks[j]["Count"]):
             Subnet = network["AS"][j]["networkIP"][0]
             network["AS"][j]["subNets"].append([Subnet[:len(Subnet)-1] + str(k+1) + "::",network["AS"][j]["networkIP"][1]])
+    
+    for router in network["routers"]:
+        ASlinks[router["AS"]-1]["RouterList"].append(router["ID"][0])
+    
+    for i in range(0,len(ASlinks)):
+
+        loopbackNetIP = network["AS"][i]["loopbackNetworkIP"][0]
+        loopbackRouterAdd = 1
+
+        for routerID in ASlinks[i]["RouterList"]:
+            network["routers"][routerID-1]["interface"].append([[],"Loopback1", loopbackNetIP[:len(loopbackNetIP)-1] + str(loopbackRouterAdd) + "::","/128"])
+            loopbackRouterAdd += 1
 
     return ASlinks
 
@@ -58,7 +70,6 @@ def attributeIP(network):
                     interface.append(currentNet+"2")
                     interface.append(network["AS"][i]["subNets"][j][1])
                     print(interface)
-
 
     return
     

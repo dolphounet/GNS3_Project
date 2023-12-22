@@ -11,6 +11,9 @@ def main():
     #findAdjacency(network)
     print(network["adjDic"])
     
+    for router in network["routers"]:
+        print(router)
+
     #createLinks(network)
 
 if __name__ == "__main__":
