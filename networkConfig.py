@@ -1,9 +1,6 @@
 def addressing_if(network, router, interface):
-    config = f"{interface}"
-    for interf in network["routers"][router-1]["interface"]:
-        if interf[1] == interface:
-            address = "".join(interf[2])
-    config = f" ipv6 address {''.join(interface[2])}\n" #à refaire attention bug parce que c'est pas une liste
+    address = "".join(interface[2:])
+    config = f" ipv6 address {address}\n"
     return config
 
 def OSPF_if(network, router, interface):
@@ -26,13 +23,13 @@ def OSPF(network, router):
 
 def BGP(network, router):
     routerId = f"{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}"
-    config = f"router bgp {network['routers'][router-1]['name']}\n no default ipv4-unicast\n bgp router-id {routerId}\n"
+    config = f"router bgp {network['routers'][router-1]['AS']}\n no default ipv4-unicast\n bgp router-id {routerId}\n"
     neighbor_addresses = []
     for neighbor in network["adjDic"][router]:
         if network["routers"][neighbor-1]["AS"] == network["routers"][router-1]["AS"]:
             for interface in network["routers"][neighbor-1]["interface"]:
                 if "Loopback" in interface[1]:
-                    neighbor_address = interface[2][0]
+                    neighbor_address = interface[2]
                     break
             config += f" neighbor {neighbor_address} remote-as {network['routers'][neighbor-1]['AS']}\n"
             config += f" neighbor {neighbor_address} update-source Loopback1\n"
@@ -42,7 +39,7 @@ def BGP(network, router):
     config += " !\n address-family ipv4\n exit-address-family\n !\n address-family ipv6 unicast\n"
     for neighbor_address in neighbor_addresses:
         config += f"  neighbor {neighbor_address} activate\n"
-    for subNet in network["AS"][network["routers"][router-1]["AS"]-1]["subNet"]:
+    for subNet in network["AS"][network["routers"][router-1]["AS"]-1]["subNets"]:
         config += f"  network {''.join(subNet)}\n"
     config += " exit-address-family\n"
     return config 
@@ -50,8 +47,8 @@ def BGP(network, router):
 def config_router(network, router):
     config = f"!\n!\n!\n!\n\n!\n! Last configuration change at 16:58:26 UTC Tue Dec 19 2023\n!\nversion 15.2\nservice timestamps debug datetime msec\nservice timestamps log datetime msec\n!\nhostname {network['routers'][router-1]['ID'][1]}\n!\nboot-start-marker\nboot-end-marker\n!\n!\n!\nno aaa new-model\nno ip icmp rate-limit unreachable\nip cef\n!\n!\n!\n!\n!\n!\nno ip domain lookup\nipv6 unicast-routing\nipv6 cef\n!\n!\nmultilink bundle-name authenticated\n!\n!\n!\n!\n!\n!\n!\n!\n!\nip tcp synwait-time 5\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n"
     for interface in network["routers"][router-1]["interface"]:
-        if interface[0] != []:
-            config += f"interface {interface[1]}\n no ip address\n negotiation auto\n{addressing_if(network, router, interface)}"
+        if interface[0] != [] or "Loopback" in interface[1]:
+            config += f"interface {interface[1]}\n no ip address\n ipv6 enable\n negotiation auto\n{addressing_if(network, router, interface)}"
         
             if "RIP" in network["AS"][network["routers"][router-1]["AS"]-1]["IGP"]:
                 config += RIP_if(network, router, interface[1])
