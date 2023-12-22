@@ -2,14 +2,16 @@ def addressing_if(network, router, interface):
     for interf in network["router"][router-1]["interface"]:
         if interf[1] == interface:
             address = "".join(interf[2])
-    config = " ipv6 address {address}\n"
+    config = f" ipv6 address {address}\n"
     return config
 
 def OSPF_if(network, router, interface):
-    pass
+    config = " ipv6 ospf 10 area 1\n"
+    return config
     #return string avec les config protocol pour l'interface
 
 def RIP_if(network, router, interface):
+    config = " ipv6 rip BeginRIP enable\n"
     pass
 
 def RIP(network, router):
@@ -17,12 +19,29 @@ def RIP(network, router):
     return config
 
 def OSPF(network, router):
-    router-id = f"{network["routers"][router-1]["name"]}.{network["routers"][router-1]["name"]}.{network["routers"][router-1]["name"]}.{network["routers"][router-1]["name"]}"
+    router-id = f"{network["routers"][router-1]["name"][0]}.{network["routers"][router-1]["name"][0]}.{network["routers"][router-1]["name"][0]}.{network["routers"][router-1]["name"][0]}"
     config = f"router ospf 10\n router-id {router-id}\n!\n"
     return config
 
 def BGP(network, router):
-    config = f"router bgp {network["routers"][router-1]["name"]}\n no default ipv4-unicast\n "
+    router-id = f"{network["routers"][router-1]["name"][0]}.{network["routers"][router-1]["name"][0]}.{network["routers"][router-1]["name"][0]}.{network["routers"][router-1]["name"][0]}"
+    config = f"router bgp {network["routers"][router-1]["name"]}\n no default ipv4-unicast\n bgp router-id {router-id}\n"
+    neighbor_addresses = []
+    for neighbor in network["adjDic"][router]:
+        if network["routers"][neighbor-1]["AS"] == network["routers"][router-1]["AS"]:
+            for interface in network["routers"][neighbor-1]["interface"]:
+                if "Loopback" in interface[1]:
+                    neighbor_address = interface[2][0]
+                    break
+            config += f" neighbor {neighbor_address} remote-as {network["routers"][neighbor-1]["AS"]}\n"
+            config += f" neighbor {neighbor_address} update-source Loopback1\n"
+            neighbor_addresses.append(neighbor_address)
+        else:
+            pass
+    config += " address-family ipv6 unicast\n"
+    for neighbor_address in neighbor_addresses:
+        config += f"  neighbor {neighbor_address} activate\n"
+
 
 def config_router(network, router, router_cfg):
     config = ""
