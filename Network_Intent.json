@@ -2,7 +2,7 @@
     
     "routers": [
         {
-            "name": 1,
+            "ID": [1, "R1"],
             "AS": 1,
             "interface": [
                 [[],"GigabitEthernet1/0"],
@@ -11,7 +11,7 @@
             ]
         },
         {
-            "name": 2,
+            "ID": [2, "R2"],
             "AS": 1,
             "interface": [
                 [[3],"GigabitEthernet1/0"],
@@ -20,7 +20,7 @@
             ]
         },
         {
-            "name": 3,
+            "ID": [3, "R3"],
             "AS": 1,
             "interface": [
                 [[2],"GigabitEthernet1/0"],
@@ -29,7 +29,7 @@
             ]
         },
         {
-            "name": 4,
+            "ID": [4, "R4"],
             "AS": 2,
             "interface": [
                 [[5],"GigabitEthernet1/0"],
@@ -38,7 +38,7 @@
             ]
         },
         {
-            "name": 5,
+            "ID": [5, "R5"],
             "AS": 2,
             "interface": [
                 [[4],"GigabitEthernet1/0"],
@@ -47,7 +47,7 @@
             ]
         },
         {
-            "name": 6,
+            "ID": [6, "R6"],
             "AS": 2,
             "interface": [
                 [[],"GigabitEthernet1/0"],
