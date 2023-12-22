@@ -69,4 +69,6 @@ def config_router(network, router):
     if "OSPF" in network["AS"][network["routers"][router-1]["AS"]-1]["IGP"]:
         config += OSPF(network, router)
 
+    config += BGP(network, router)
+
     return config
