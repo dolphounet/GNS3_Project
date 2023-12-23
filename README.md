@@ -10,5 +10,10 @@ Membres :
 
 ## Network_Intent
 
-1. Router ID is a list of a unique positive integer (except 0) used to identify the router in the programm, and a string corresponding to the hostname (The hostnames aren't necessarily uniques).
+The file is organised via lists, with each list containing dictionnaries which contains attributes in the form of keys. The main lists are "routers", "AS", :
+
+###Routers
+
+1. Router ID :
+is a list of a unique positive integer (starting from one) used to identify the router in the programm, and a string corresponding to the hostname (The hostnames aren't necessarily uniques).
 2. AS numbers must be positive integers, their value starts by one.
