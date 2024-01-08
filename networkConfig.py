@@ -16,9 +16,19 @@ def RIP(network, router):
     config = "ipv6 router rip BeginRIP\n redistribute connected\n!\n"
     return config
 
+def passive_if(network, router):
+    config = ""
+    for interface in network["routers"][router-1]["interface"]:
+        if interface[0] != [] and network["routers"][interface[0][0]-1]["AS"] != network["routers"][router-1]["AS"]:
+            config += f" passive-interface {interface[1]}\n"
+    return config
+
+
 def OSPF(network, router):
     routerId = f"{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}"
-    config = f"router ospf 10\n router-id {routerId}\n!\n"
+    config = f"router ospf 10\n router-id {routerId}\n"
+    config += passive_if(network, router)
+    config += "!\n"
     return config
 
 def BGP(network, router):
