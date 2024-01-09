@@ -56,14 +56,17 @@ def BGP(network, router):
             neighbor_addresses.append(neighbor_address)
         else:
             pass
+    if border_router(network, router):
+        config += "no synchronization"
     config += " !\n address-family ipv4\n exit-address-family\n !\n address-family ipv6 unicast\n"
     for neighbor_address in neighbor_addresses:
         config += f"  neighbor {neighbor_address} activate\n"
-    for subNet in network["AS"][network["routers"][router-1]["AS"]-1]["subNets"]:
-        if border_router(network, router):
-            config += f"  network {''.join(subNet)}\n"
-        elif belongs_to_subNet(network, router, subNet):
-            config += f"  network {''.join(subNet)}\n"
+    if border_router(network, router):
+        config += f"  network {''.join(network['AS'][network['routers'][router-1]['AS']-1]['networkIP'])}\n"
+    else:
+        for subNet in network["AS"][network["routers"][router-1]["AS"]-1]["subNets"]:
+            if belongs_to_subNet(network, router, subNet):
+                config += f"  network {''.join(subNet)}\n"
     '''
     if border_router(network, router):
         for subNet in network["InterAS"][]:
