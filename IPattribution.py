@@ -63,13 +63,12 @@ def attributeIP(network):
                 if interface[0] == [ID2] :
                     interface.append(currentNet+"1")
                     interface.append(network["AS"][i]["subNets"][j][1])
-                    print(interface)
 
             for interface in network["routers"][ID2-1]["interface"]:
                 if interface[0] == [ID1] :
                     interface.append(currentNet+"2")
                     interface.append(network["AS"][i]["subNets"][j][1])
-                    print(interface)
+                    
 
     return
     
