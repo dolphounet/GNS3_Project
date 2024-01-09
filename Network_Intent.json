@@ -158,9 +158,8 @@
         }
     ],
 
-    "InterAS" : [
+    "InterAS" : 
         {
             "networkIP": ["5000::","/16"]
         }
-    ]
 }
