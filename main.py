@@ -10,6 +10,8 @@ def main():
 
     # Attribution des IP
     attributeIP(network)
+
+    print(network)
     
     # Ecriture des fichiers config
     for router in network["routers"]:
