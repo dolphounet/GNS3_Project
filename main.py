@@ -8,7 +8,7 @@ def main():
     attributeIP(network)
     #findAdjacency(network)
     print(network["AS"])
-    writeCfg("config_R1", config_router(network, 5))
+    writeCfg("config_R1", config_router(network, 4))
     
     for router in network["routers"]:
         print(router)
