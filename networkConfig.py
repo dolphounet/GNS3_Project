@@ -1,18 +1,18 @@
-def addressing_if(network, router, interface):
+def addressing_if(interface):
     address = "".join(interface[2:])
     config = f" ipv6 address {address}\n"
     return config
 
-def OSPF_if(network, router, interface):
+def OSPF_if():
     config = " ipv6 ospf 10 area 1\n"
     return config
     #return string avec les config protocol pour l'interface
 
-def RIP_if(network, router, interface):
+def RIP_if():
     config = " ipv6 rip BeginRIP enable\n"
     return config
 
-def RIP(network, router):
+def RIP():
     config = "ipv6 router rip BeginRIP\n redistribute connected\n!\n"
     return config
 
@@ -55,16 +55,16 @@ def BGP(network, router):
     return config 
 
 def config_router(network, router):
-    config = f"!\n!\n!\n!\n!\n!\n!\n\n!\nversion 15.2\nservice timestamps debug datetime msec\nservice timestamps log datetime msec\n!\nhostname {network['routers'][router-1]['ID'][1]}\n!\nboot-start-marker\nboot-end-marker\n!\n!\n!\nno aaa new-model\nno ip icmp rate-limit unreachable\nip cef\n!\n!\n!\n!\n!\n!\nno ip domain lookup\nipv6 unicast-routing\nipv6 cef\n!\n!\nmultilink bundle-name authenticated\n!\n!\n!\n!\n!\n!\n!\n!\n!\nip tcp synwait-time 5\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n"
+    config = f"!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n\n!\nversion 15.2\nservice timestamps debug datetime msec\nservice timestamps log datetime msec\n!\nhostname {network['routers'][router-1]['ID'][1]}\n!\nboot-start-marker\nboot-end-marker\n!\n!\n!\nno aaa new-model\nno ip icmp rate-limit unreachable\nip cef\n!\n!\n!\n!\n!\n!\nno ip domain lookup\nipv6 unicast-routing\nipv6 cef\n!\n!\nmultilink bundle-name authenticated\n!\n!\n!\n!\n!\n!\n!\n!\n!\nip tcp synwait-time 5\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n"
     for interface in network["routers"][router-1]["interface"]:
         if interface[0] != [] or "Loopback" in interface[1]:
-            config += f"interface {interface[1]}\n no ip address\n ipv6 enable\n negotiation auto\n{addressing_if(network, router, interface)}"
+            config += f"interface {interface[1]}\n no ip address\n ipv6 enable\n negotiation auto\n{addressing_if(interface)}"
         
             if "RIP" in network["AS"][network["routers"][router-1]["AS"]-1]["IGP"]:
-                config += RIP_if(network, router, interface[1])
+                config += RIP_if()
 
             if "OSPF" in network["AS"][network["routers"][router-1]["AS"]-1]["IGP"]:
-                config += OSPF_if(network, router, interface[1])
+                config += OSPF_if()
 
             config += "!\n"
         else:
@@ -73,7 +73,7 @@ def config_router(network, router):
     config += BGP(network, router)
 
     if "RIP" in network["AS"][network["routers"][router-1]["AS"]-1]["IGP"]:
-        config += RIP(network, router)
+        config += RIP()
 
     if "OSPF" in network["AS"][network["routers"][router-1]["AS"]-1]["IGP"]:
         config += OSPF(network, router)
