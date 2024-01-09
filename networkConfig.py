@@ -1,5 +1,13 @@
+def border_router(network, router):
+    for interface in network["routers"][router-1]["interfaces"]:
+        if interface[0] != [] and network["routers"][interface[0][0]-1]["AS"] != network["routers"][router-1]["AS"]:
+            return True
+    return False
+
+def belongs_to_subNet(network, router, subNet):
+    return subNet in network["routers"][router-1]["subNets"]
+
 def addressing_if(interface):
-    print(interface)
     address = "".join(interface[2:])
     config = f" ipv6 address {address}\n"
     return config
@@ -7,7 +15,6 @@ def addressing_if(interface):
 def OSPF_if():
     config = " ipv6 ospf 10 area 0\n"
     return config
-    #return string avec les config protocol pour l'interface
 
 def RIP_if(network, router, interface):
     config = ""
@@ -53,7 +60,16 @@ def BGP(network, router):
     for neighbor_address in neighbor_addresses:
         config += f"  neighbor {neighbor_address} activate\n"
     for subNet in network["AS"][network["routers"][router-1]["AS"]-1]["subNets"]:
-        config += f"  network {''.join(subNet)}\n"
+        if border_router(network, router):
+            config += f"  network {''.join(subNet)}\n"
+        elif belongs_to_subNet(network, router, subNet):
+            config += f"  network {''.join(subNet)}\n"
+'''
+    if border_router(network, router):
+        for subNet in network["InterAS"][]:
+            pass
+        config += f"network {network["subNets"][]}"
+'''    
     config += " exit-address-family\n"
     return config 
 
