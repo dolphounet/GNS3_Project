@@ -56,8 +56,6 @@ def BGP(network, router):
             neighbor_addresses.append(neighbor_address)
         else:
             pass
-    if border_router(network, router):
-        config += "no synchronization"
     config += " !\n address-family ipv4\n exit-address-family\n !\n address-family ipv6 unicast\n"
     for neighbor_address in neighbor_addresses:
         config += f"  neighbor {neighbor_address} activate\n"
