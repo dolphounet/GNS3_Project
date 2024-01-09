@@ -1,5 +1,5 @@
 def border_router(network, router):
-    for interface in network["routers"][router-1]["interfaces"]:
+    for interface in network["routers"][router-1]["interface"]:
         if interface[0] != [] and network["routers"][interface[0][0]-1]["AS"] != network["routers"][router-1]["AS"]:
             return True
     return False
@@ -64,12 +64,12 @@ def BGP(network, router):
             config += f"  network {''.join(subNet)}\n"
         elif belongs_to_subNet(network, router, subNet):
             config += f"  network {''.join(subNet)}\n"
-'''
+    '''
     if border_router(network, router):
         for subNet in network["InterAS"][]:
             pass
         config += f"network {network["subNets"][]}"
-'''    
+    '''    
     config += " exit-address-family\n"
     return config 
 
