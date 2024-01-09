@@ -17,7 +17,7 @@ List of different dictionnaries representing one router and it's multiple caract
 
 1. "ID" - Is a list containing :
   - A unique, strictly positive integer, used to identify the router in the programm. This number should correspond to the position of the router in the list (if we start counting by one).
-  - A string corresponding to the hostname (The hostname does not need to be unique to the router).
+  - A string corresponding to the hostname (The hostname does not need to be unique to the router, it is only recommended to have unique names).
 
 2. "AS" :
 
