@@ -54,29 +54,29 @@ def BGP(network, router):
     config += " exit-address-family\n"
     return config 
 
-def config_router(network, router):
-    config = f"!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n\n!\nversion 15.2\nservice timestamps debug datetime msec\nservice timestamps log datetime msec\n!\nhostname {network['routers'][router-1]['ID'][1]}\n!\nboot-start-marker\nboot-end-marker\n!\n!\n!\nno aaa new-model\nno ip icmp rate-limit unreachable\nip cef\n!\n!\n!\n!\n!\n!\nno ip domain lookup\nipv6 unicast-routing\nipv6 cef\n!\n!\nmultilink bundle-name authenticated\n!\n!\n!\n!\n!\n!\n!\n!\n!\nip tcp synwait-time 5\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n"
-    for interface in network["routers"][router-1]["interface"]:
+def config_router(network, routerID):
+    config = f"!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n\n!\nversion 15.2\nservice timestamps debug datetime msec\nservice timestamps log datetime msec\n!\nhostname {network['routers'][routerID-1]['ID'][1]}\n!\nboot-start-marker\nboot-end-marker\n!\n!\n!\nno aaa new-model\nno ip icmp rate-limit unreachable\nip cef\n!\n!\n!\n!\n!\n!\nno ip domain lookup\nipv6 unicast-routing\nipv6 cef\n!\n!\nmultilink bundle-name authenticated\n!\n!\n!\n!\n!\n!\n!\n!\n!\nip tcp synwait-time 5\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n"
+    for interface in network["routers"][routerID-1]["interface"]:
         if interface[0] != [] or "Loopback" in interface[1]:
             config += f"interface {interface[1]}\n no ip address\n ipv6 enable\n negotiation auto\n{addressing_if(interface)}"
         
-            if "RIP" in network["AS"][network["routers"][router-1]["AS"]-1]["IGP"]:
+            if "RIP" in network["AS"][network["routers"][routerID-1]["AS"]-1]["IGP"]:
                 config += RIP_if()
 
-            if "OSPF" in network["AS"][network["routers"][router-1]["AS"]-1]["IGP"]:
+            if "OSPF" in network["AS"][network["routers"][routerIDr-1]["AS"]-1]["IGP"]:
                 config += OSPF_if()
 
             config += "!\n"
         else:
             config += f"interface {interface[1]}\n no ip address\n shutdown\n negotiation auto\n!\n"
 
-    config += BGP(network, router)
+    config += BGP(network, routerID)
 
-    if "RIP" in network["AS"][network["routers"][router-1]["AS"]-1]["IGP"]:
+    if "RIP" in network["AS"][network["routers"][routerID-1]["AS"]-1]["IGP"]:
         config += RIP()
 
-    if "OSPF" in network["AS"][network["routers"][router-1]["AS"]-1]["IGP"]:
-        config += OSPF(network, router)
+    if "OSPF" in network["AS"][network["routers"][routerID-1]["AS"]-1]["IGP"]:
+        config += OSPF(network, routerID)
 
     config += "!\n!\n!\ncontrol-plane\n!\n!\nline con 0\n exec-timeout 0 0\n privilege level 15\n logging synchronous\n stopbits 1\nline aux 0\n exec-timeout 0 0\n privilege level 15\n logging synchronous\n stopbits 1\nline vty 0 4\n login\n!\n!\nend"
     return config
