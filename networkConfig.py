@@ -4,12 +4,13 @@ def addressing_if(interface):
     return config
 
 def OSPF_if():
-    config = " ipv6 ospf 10 area 1\n"
+    config = " ipv6 ospf 10 area 0\n"
     return config
     #return string avec les config protocol pour l'interface
 
-def RIP_if():
-    config = " ipv6 rip BeginRIP enable\n"
+def RIP_if(network, router, interface):
+    if interface[0] != [] and network["routers"][interface[0][0]-1]["AS"] != network["routers"][router-1]["AS"]:
+        config = " ipv6 rip BeginRIP enable\n"
     return config
 
 def RIP():
@@ -61,7 +62,7 @@ def config_router(network, routerID):
             config += f"interface {interface[1]}\n no ip address\n ipv6 enable\n negotiation auto\n{addressing_if(interface)}"
         
             if "RIP" in network["AS"][network["routers"][routerID-1]["AS"]-1]["IGP"]:
-                config += RIP_if()
+                config += RIP_if(network, routerID, interface[])
 
             if "OSPF" in network["AS"][network["routers"][routerIDr-1]["AS"]-1]["IGP"]:
                 config += OSPF_if()
