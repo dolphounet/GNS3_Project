@@ -4,16 +4,17 @@ from networkConfig import config_router
 
 
 def main():
-    network = readJson('Network_Intent.json')
-    attributeIP(network)
-    #findAdjacency(network)
-    print(network["AS"])
-    writeCfg("config_R1", config_router(network, 4))
-    
-    for router in network["routers"]:
-        print(router)
 
-    #createLinks(network)
+    # Récupération des informations du réseau
+    network = readJson('Network_Intent.json')
+
+    # Attribution des IP
+    attributeIP(network)
+    
+    # Ecriture des fichiers config
+    for router in network["routers"]:
+        writeCfg(f'i{router["ID"][0]}_startup-config.cfg', config_router(network, router["ID"][0]))
+
 
 if __name__ == "__main__":
     main()
