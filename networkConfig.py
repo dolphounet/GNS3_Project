@@ -57,9 +57,14 @@ def BGP(network, router):
                     break
             config += f" neighbor {neighbor_address} remote-as {network['routers'][neighbor-1]['AS']}\n"
             config += f" neighbor {neighbor_address} update-source Loopback1\n"
-            neighbor_addresses.append(neighbor_address)
         else:
-            pass
+            for interface in network["routers"][neighbor-1]["interface"]:
+                if router in interface[0]:
+                    neighbor_address = interface[2]
+                    break
+            config += f" neighbor {neighbor_address} remote-as {network['routers'][neighbor-1]['AS']}\n"
+        neighbor_addresses.append(neighbor_address)
+
     config += " !\n address-family ipv4\n exit-address-family\n !\n address-family ipv6 unicast\n"
     for neighbor_address in neighbor_addresses:
         config += f"  neighbor {neighbor_address} activate\n"
