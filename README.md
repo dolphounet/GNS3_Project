@@ -45,3 +45,10 @@ List of dictionnaries representing the AS(s) in the Network.
 - A list containing as many strings as Interior Gateway Protocols in the AS, for the now the possible values are :
 
   -- "RIP", "OSPF"
+
+### Constants
+
+A dictonnary of dictionnaries referencing different constants and norms for every routers / AS
+
+1. "Bandwith" - Contains the reference bandwith and the bandwith of the various interfaces, used in OSPF metrics
+  - Values must be integers, unit is the kilobyte (Used by the GNS3 terminals by default)
