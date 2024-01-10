@@ -41,7 +41,7 @@ def OSPF(network, router):
     routerId = f"{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}"
     config = f"router ospf 10\n router-id {routerId}\n"
     config += passive_if(network, router)
-    config += f" auto-cost reference-bandwidth {network['Constants']['Bandwith']['Reference']}"
+    config += f" auto-cost reference-bandwidth {network['Constants']['Bandwith']['Reference']}\n"
     config += "!\n"
     return config
 
@@ -69,12 +69,12 @@ def BGP(network, router):
         for subNet in network["AS"][network["routers"][router-1]["AS"]-1]["subNets"]:
             if belongs_to_subNet(network, router, subNet):
                 config += f"  network {''.join(subNet)}\n"
-    '''
+    
     if border_router(network, router):
-        for subNet in network["InterAS"][]:
-            pass
-        config += f"network {network["subNets"][]}"
-    '''    
+        for subNet in network["InterAS"]["subNets"]:
+            if belongs_to_subNet(network, router, subNet):
+                config += f"  network {''.join(subNet)}\n"
+        
     config += " exit-address-family\n"
     return config 
 
