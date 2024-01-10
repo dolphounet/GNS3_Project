@@ -47,7 +47,7 @@ def OSPF(network, router):
 
 def BGP(network, router):
     routerId = f"{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}"
-    config = f"router bgp {network['routers'][router-1]['AS']}\n no default ipv4-unicast\n bgp router-id {routerId}\n"
+    config = f"router bgp {network['routers'][router-1]['AS']}\n no bgp default ipv4-unicast\n bgp router-id {routerId}\n"
     neighbor_addresses = []
     for neighbor in network["adjDic"][router]:
         if network["routers"][neighbor-1]["AS"] == network["routers"][router-1]["AS"]:
@@ -87,8 +87,14 @@ def config_router(network, routerID):
     config = f"!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n\n!\nversion 15.2\nservice timestamps debug datetime msec\nservice timestamps log datetime msec\n!\nhostname {network['routers'][routerID-1]['ID'][1]}\n!\nboot-start-marker\nboot-end-marker\n!\n!\n!\nno aaa new-model\nno ip icmp rate-limit unreachable\nip cef\n!\n!\n!\n!\n!\n!\nno ip domain lookup\nipv6 unicast-routing\nipv6 cef\n!\n!\nmultilink bundle-name authenticated\n!\n!\n!\n!\n!\n!\n!\n!\n!\nip tcp synwait-time 5\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n"
     for interface in network["routers"][routerID-1]["interface"]:
         if interface[0] != [] or "Loopback" in interface[1]:
-            config += f"interface {interface[1]}\n no ip address\n ipv6 enable\n negotiation auto\n{addressing_if(interface)}"
-        
+            if "Loopback" in interface[1]:
+                config += f"interface {interface[1]}\n no ip address\n ipv6 enable\n negotiation auto\n{addressing_if(interface)}"
+            elif "Fast" in interface[1]:
+                config += f"interface {interface[1]}\n no ip address\n duplex full\n ipv6 enable\n{addressing_if(interface)}"
+
+            else:
+                config += f"interface {interface[1]}\n no ip address\n ipv6 enable\n{addressing_if(interface)}"
+
             if "RIP" in network["AS"][network["routers"][routerID-1]["AS"]-1]["IGP"]:
                 config += RIP_if(network, routerID, interface)
 
