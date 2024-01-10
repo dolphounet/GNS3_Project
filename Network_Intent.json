@@ -161,5 +161,15 @@
     "InterAS" : 
         {
             "networkIP": ["5000::","/16"]
+        },
+
+    "Constants" :
+        {
+            "Bandwith" : 
+            {
+                "Reference" : 1000000,
+                "GigabitEthernet" : 1000000,
+                "FastEthernet" : 100000
+            }
         }
 }
