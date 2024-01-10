@@ -12,8 +12,11 @@ def addressing_if(interface):
     config = f" ipv6 address {address}\n"
     return config
 
-def OSPF_if():
+def OSPF_if(network,interface):
     config = " ipv6 ospf 10 area 0\n"
+    for interfaceType in network["Constants"]["Bandwith"]:
+        if interfaceType in interface[1] and interfaceType != "Reference":
+            config += f" bandwith {network['Constants']['Bandwith'][interfaceType]}\n"
     return config
 
 def RIP_if(network, router, interface):
@@ -38,6 +41,7 @@ def OSPF(network, router):
     routerId = f"{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}"
     config = f"router ospf 10\n router-id {routerId}\n"
     config += passive_if(network, router)
+    config += f" auto-cost reference-bandwidth {network['Constants']['Bandwith']['Reference']}"
     config += "!\n"
     return config
 
@@ -84,7 +88,7 @@ def config_router(network, routerID):
                 config += RIP_if(network, routerID, interface)
 
             if "OSPF" in network["AS"][network["routers"][routerID-1]["AS"]-1]["IGP"]:
-                config += OSPF_if()
+                config += OSPF_if(network,interface)
 
             config += "!\n"
         else:
