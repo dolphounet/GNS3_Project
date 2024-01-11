@@ -14,7 +14,7 @@ def writeCfg(filePath, config):
     return
 
 def placeBot(network,projectPath):
-    #projectPath += "/project-files/dynamips"
+    projectPath += "/project-files/dynamips"
     filesPath = {}
 
     for dirPath, dirs, files in os.walk(projectPath):
