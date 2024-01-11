@@ -45,21 +45,26 @@ def BGP(network, router):
     routerId = f"{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}"
     config = f"router bgp {network['routers'][router-1]['AS']}\n no bgp default ipv4-unicast\n bgp router-id {routerId}\n"
     neighbor_addresses = []
-    for neighbor in network["adjDic"][router]:
-        if network["routers"][neighbor-1]["AS"] == network["routers"][router-1]["AS"]:
-            for interface in network["routers"][neighbor-1]["interface"]:
-                if "Loopback" in interface[1]:
-                    neighbor_address = interface[2]
-                    break
-            config += f" neighbor {neighbor_address} remote-as {network['routers'][neighbor-1]['AS']}\n"
-            config += f" neighbor {neighbor_address} update-source Loopback1\n"
-        else:
-            for interface in network["routers"][neighbor-1]["interface"]:
-                if router in interface[0]:
-                    neighbor_address = interface[2]
-                    break
-            config += f" neighbor {neighbor_address} remote-as {network['routers'][neighbor-1]['AS']}\n"
-        neighbor_addresses.append(neighbor_address)
+    for rtr in network["routers"]:
+        neighbor = rtr["ID"][0]
+        if neighbor != router:
+            if network["routers"][neighbor-1]["AS"] == network["routers"][router-1]["AS"]:
+                print(neighbor)
+                for interface in network["routers"][neighbor-1]["interface"]:
+                    if "Loopback" in interface[1]:
+                        print('a')
+                        neighbor_address = interface[2]
+                        break
+                config += f" neighbor {neighbor_address} remote-as {network['routers'][neighbor-1]['AS']}\n"
+                config += f" neighbor {neighbor_address} update-source Loopback1\n"
+                neighbor_addresses.append(neighbor_address)
+            elif neighbor in network["adjDic"][router]:
+                for interface in network["routers"][neighbor-1]["interface"]:
+                    if router in interface[0]:
+                        neighbor_address = interface[2]
+                        break
+                config += f" neighbor {neighbor_address} remote-as {network['routers'][neighbor-1]['AS']}\n"
+                neighbor_addresses.append(neighbor_address)
 
     config += " !\n address-family ipv4\n exit-address-family\n !\n address-family ipv6 unicast\n"
     for neighbor_address in neighbor_addresses:
