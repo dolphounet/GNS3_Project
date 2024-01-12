@@ -167,7 +167,7 @@
         {
             "Bandwith" : 
             {
-                "Reference" : 1000000,
+                "Reference" : 1000,
                 "GigabitEthernet" : 1000000,
                 "FastEthernet" : 100000
             }
