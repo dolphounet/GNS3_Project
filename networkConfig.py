@@ -23,14 +23,14 @@ def OSPF_if(network,interface):
     config = " ipv6 ospf 10 area 0\n"
     for interfaceType in network["Constants"]["Bandwith"]:
         if interfaceType in interface[1] and interfaceType != "Reference":
-            config += f" bandwith {network['Constants']['Bandwith'][interfaceType]}\n"
+            config += f" bandwidth {network['Constants']['Bandwith'][interfaceType]}\n"
     return config
 
 def OSPF(network, router):
     routerId = f"{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}"
     config = f"ipv6 router ospf 10\n router-id {routerId}\n"
     config += passive_if(network, router)
-    config += f" auto-cost reference-bandwidth {network['Constants']['Bandwith']['Reference']}"
+    config += f" auto-cost reference-bandwidth {network['Constants']['Bandwith']['Reference']}\n"
     config += "!\n"
     return config
 
