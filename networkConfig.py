@@ -52,10 +52,8 @@ def BGP(network, router):
         neighbor = rtr["ID"][0]
         if neighbor != router:
             if network["routers"][neighbor-1]["AS"] == network["routers"][router-1]["AS"]:
-                print(neighbor)
                 for interface in network["routers"][neighbor-1]["interface"]:
                     if "Loopback" in interface[1]:
-                        print('a')
                         neighbor_address = interface[2]
                         break
                 config += f" neighbor {neighbor_address} remote-as {network['routers'][neighbor-1]['AS']}\n"
@@ -107,7 +105,7 @@ def config_router(network, routerID):
 
             config += "!\n"
         else:
-            config += f"interface {interface[1]}\n no ip address\n shutdown\n negotiation auto\n!\n"
+            config += f"interface {interface[1]}\n no ip address\n shutdown\n!\n"
 
     config += BGP(network, routerID)
 
