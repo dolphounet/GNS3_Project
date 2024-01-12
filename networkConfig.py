@@ -12,8 +12,26 @@ def addressing_if(interface):
     config = f" ipv6 address {address}\n"
     return config
 
+def passive_if(network, router):
+    config = ""
+    for interface in network["routers"][router-1]["interface"]:
+        if interface[0] != [] and network["routers"][interface[0][0]-1]["AS"] != network["routers"][router-1]["AS"]:
+            config += f" passive-interface {interface[1]}\n"
+    return config
+
 def OSPF_if(network,interface):
     config = " ipv6 ospf 10 area 0\n"
+    for interfaceType in network["Constants"]["Bandwith"]:
+        if interfaceType in interface[1] and interfaceType != "Reference":
+            config += f" bandwith {network['Constants']['Bandwith'][interfaceType]}\n"
+    return config
+
+def OSPF(network, router):
+    routerId = f"{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}"
+    config = f"ipv6 router ospf 10\n router-id {routerId}\n"
+    config += passive_if(network, router)
+    config += f" auto-cost reference-bandwidth {network['Constants']['Bandwith']['Reference']}"
+    config += "!\n"
     return config
 
 def RIP_if(network, router, interface):
@@ -24,21 +42,6 @@ def RIP_if(network, router, interface):
 
 def RIP():
     config = "ipv6 router rip BeginRIP\n redistribute connected\n!\n"
-    return config
-
-def passive_if(network, router):
-    config = ""
-    for interface in network["routers"][router-1]["interface"]:
-        if interface[0] != [] and network["routers"][interface[0][0]-1]["AS"] != network["routers"][router-1]["AS"]:
-            config += f" passive-interface {interface[1]}\n"
-    return config
-
-
-def OSPF(network, router):
-    routerId = f"{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}"
-    config = f"ipv6 router ospf 10\n router-id {routerId}\n"
-    config += passive_if(network, router)
-    config += "!\n"
     return config
 
 def BGP(network, router):
