@@ -22,12 +22,10 @@ def addressing_if(tn, interface):
     writeLine(tn, f"ipv6 address {address}")
 
 
-def passive_if(network, router):
-    config = ""
+def passive_if(tn, network, router):
     for interface in network["routers"][router-1]["interface"]:
         if interface[0] != [] and network["routers"][interface[0][0]-1]["AS"] != network["routers"][router-1]["AS"]:
-            config += f" passive-interface {interface[1]}\n"
-    return config
+            writeLine(tn, f"passive-interface {interface[1]}")
 
 def OSPF_if(tn, network,interface):
     writeLine(tn, "ipv6 ospf 10 area 0")
@@ -35,25 +33,28 @@ def OSPF_if(tn, network,interface):
         if interfaceType in interface[1] and interfaceType != "Reference":
             writeLine(tn, f"bandwidth {network['Constants']['Bandwith'][interfaceType]}")
 
-def OSPF(network, router):
+def OSPF(tn, network, router):
     routerId = f"{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}"
-    config = f"ipv6 router ospf 10\n router-id {routerId}\n"
-    config += passive_if(network, router)
-    config += f" auto-cost reference-bandwidth {network['Constants']['Bandwith']['Reference']}\n"
-    config += "!\n"
-    return config
+    writeLine(tn, "ipv6 router ospf 10")
+    writeLine(tn, f"router-id {routerId}")
+    passive_if(tn, network, router)
+    writeLine(tn, f"auto-cost reference-bandwidth {network['Constants']['Bandwith']['Reference']}")
+    writeLine(tn, "exit")
 
 def RIP_if(tn, network, router, interface):
     if interface[1] == "Loopback1" or network["routers"][interface[0][0]-1]["AS"] == network["routers"][router-1]["AS"]:
         writeLine(tn, "ipv6 rip BeginRIP enable")
 
-def RIP():
-    config = "ipv6 router rip BeginRIP\n redistribute connected\n!\n"
-    return config
+def RIP(tn):
+    writeLine(tn, "ipv6 router rip BeginRIP")
+    writeLine(tn, "redistribute connected")
+    writeLine(tn, "exit")
 
-def BGP(network, router):
+def BGP(tn, network, router):
     routerId = f"{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}"
-    config = f"router bgp {network['routers'][router-1]['AS']}\n no bgp default ipv4-unicast\n bgp router-id {routerId}\n"
+    writeLine(tn, f"router bgp {network['routers'][router-1]['AS']}")
+    writeLine(tn, "no bgp default ipv4-unicast")
+    writeLine(tn, f"bgp router-id {routerId}")
     neighbor_addresses = []
     for rtr in network["routers"]:
         neighbor = rtr["ID"][0]
@@ -63,34 +64,33 @@ def BGP(network, router):
                     if "Loopback" in interface[1]:
                         neighbor_address = interface[2]
                         break
-                config += f" neighbor {neighbor_address} remote-as {network['routers'][neighbor-1]['AS']}\n"
-                config += f" neighbor {neighbor_address} update-source Loopback1\n"
+                writeLine(tn, f"neighbor {neighbor_address} remote-as {network['routers'][neighbor-1]['AS']}")
+                writeLine(tn, f"neighbor {neighbor_address} update-source Loopback1")
                 neighbor_addresses.append(neighbor_address)
             elif neighbor in network["adjDic"][router]:
                 for interface in network["routers"][neighbor-1]["interface"]:
                     if router in interface[0]:
                         neighbor_address = interface[2]
                         break
-                config += f" neighbor {neighbor_address} remote-as {network['routers'][neighbor-1]['AS']}\n"
+                writeLine(tn, f"neighbor {neighbor_address} remote-as {network['routers'][neighbor-1]['AS']}")
                 neighbor_addresses.append(neighbor_address)
 
-    config += " !\n address-family ipv4\n exit-address-family\n !\n address-family ipv6 unicast\n"
+    writeLine(tn, "address-family ipv6 unicast")
     for neighbor_address in neighbor_addresses:
-        config += f"  neighbor {neighbor_address} activate\n"
+        writeLine(tn, f"neighbor {neighbor_address} activate")
     if border_router(network, router):
-        config += f"  network {''.join(network['AS'][network['routers'][router-1]['AS']-1]['networkIP'])}\n"
+        writeLine(tn, f"network {''.join(network['AS'][network['routers'][router-1]['AS']-1]['networkIP'])}")
     else:
         for subNet in network["AS"][network["routers"][router-1]["AS"]-1]["subNets"]:
             if belongs_to_subNet(network, router, subNet):
-                config += f"  network {''.join(subNet)}\n"
-    
+                writeLine(tn, f"network {''.join(subNet)}")
     if border_router(network, router):
         for subNet in network["InterAS"]["subNets"]:
             if belongs_to_subNet(network, router, subNet):
-                config += f"  network {''.join(subNet)}\n"
+                writeLine(tn, f"network {''.join(subNet)}")
         
-    config += " exit-address-family\n"
-    return config 
+    writeLine(tn, "exit-address-family")
+    writeLine(tn, "exit") 
 
 def config_router(network, routerID):
     port = network["routers"][routerID-1]["Port"]
@@ -112,17 +112,15 @@ def config_router(network, routerID):
                 OSPF_if(tn, network,interface)
             writeLine(tn, "no shutdown")
             writeLine(tn, "exit")
-    tn.close()
-    """
-    config += BGP(network, routerID)
+
+    BGP(tn, network, routerID)
 
     if "RIP" in network["AS"][network["routers"][routerID-1]["AS"]-1]["IGP"]:
-        config += RIP()
+        RIP(tn)
 
     if "OSPF" in network["AS"][network["routers"][routerID-1]["AS"]-1]["IGP"]:
-        config += OSPF(network, routerID)
-
-    config += "!\n!\n!\ncontrol-plane\n!\n!\nline con 0\n exec-timeout 0 0\n privilege level 15\n logging synchronous\n stopbits 1\nline aux 0\n exec-timeout 0 0\n privilege level 15\n logging synchronous\n stopbits 1\nline vty 0 4\n login\n!\n!\nend"
-    
-    return config
-    """
+        OSPF(tn, network, routerID)
+    writeLine(tn, "end")
+    writeLine(tn, "write") #To write the configuration in order not to lose it the next time
+    tn.read_until(b"[OK]") #Waiting for the writing to complete
+    tn.close()
