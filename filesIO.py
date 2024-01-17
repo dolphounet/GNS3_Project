@@ -14,10 +14,14 @@ def writeCfg(filePath, config):
     return
 
 def placeBot(network,projectPath):
-    projectPath += "/project-files/dynamips"
-    filesPath = {}
 
-    for dirPath, dirs, files in os.walk(projectPath):
+    if os.name == "nt" :
+        projectPath += "\project-files\dynamips"
+    else :
+        projectPath += "/project-files/dynamips"
+    filesPath = {}
+    
+    for dirPath, dirs, files in os.walk(os.path.normpath(projectPath)):
         for file in files:
             if file.endswith('.cfg'):
                 filesPath[file] = os.path.join(dirPath, file)
