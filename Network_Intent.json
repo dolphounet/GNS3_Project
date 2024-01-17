@@ -148,13 +148,19 @@
             "ASName": 1,
             "networkIP": ["2001:200:200:10::","/64"],
             "loopbackNetworkIP": ["2001:200:200:11::","/64"],
-            "IGP": ["RIP"]
+            "IGP": ["RIP"],
+            "relations" : {
+                "2" : "Client"
+            }
         },
         {
             "ASName": 2,
             "networkIP": ["2001:200:200:20::","/64"],
             "loopbackNetworkIP": ["2001:200:200:21::","/64"],
-            "IGP": ["OSPF"]
+            "IGP": ["OSPF"],
+            "relations" : {
+
+            }
         }
     ],
 
