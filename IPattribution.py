@@ -70,6 +70,7 @@ def attributeIP(network):
 
     findAdjacency(network)
     ASlinks,InterASlinks = createLinks(network)
+    i,j,k = 0,0,0
 
     # Gestion pour un AS
     for i in range(0,len(ASlinks)):
@@ -98,13 +99,13 @@ def attributeIP(network):
         for interface in network["routers"][ID1-1]["interface"]:
             if interface[0] == [ID2] :
                 interface.append(currentNet+"1")
-                interface.append(network["AS"][i]["subNets"][j][1])
+                interface.append(network["AS"][k]["subNets"][k][1])
                 network["routers"][ID1-1]["subNets"].append([currentNet,network["InterAS"]["subNets"][k][1]])         
                     
         for interface in network["routers"][ID2-1]["interface"]:
             if interface[0] == [ID1] :
                 interface.append(currentNet+"2")
-                interface.append(network["AS"][i]["subNets"][j][1])
+                interface.append(network["AS"][k]["subNets"][k][1])
                 network["routers"][ID2-1]["subNets"].append([currentNet,network["InterAS"]["subNets"][k][1]])
 
     network["InterAS"]["InterASlinks"] = InterASlinks
