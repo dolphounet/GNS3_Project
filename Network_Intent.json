@@ -159,7 +159,7 @@
             "loopbackNetworkIP": ["2001:200:200:21::","/64"],
             "IGP": ["OSPF"],
             "relations" : {
-
+                "1" : "Provider"
             }
         }
     ],
@@ -176,6 +176,12 @@
                 "Reference" : 1000,
                 "GigabitEthernet" : 1000000,
                 "FastEthernet" : 100000
+            },
+            "LocPref" :
+            {
+                "Client" : 150,
+                "Peer" : 100,
+                "Provider" : 50
             }
         }
 }
