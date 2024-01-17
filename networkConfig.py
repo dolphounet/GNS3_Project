@@ -45,12 +45,20 @@ def RIP():
     return config
 
 def BGP(network, router):
+    """
+    Ca s'applique pour le routeur d'ID router
+    """
     routerId = f"{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}"
+    neighbor_addresses = {"iBGP" : [], "eBGP" : []}
+
+    
     config = f"router bgp {network['routers'][router-1]['AS']}\n no bgp default ipv4-unicast\n bgp router-id {routerId}\n"
-    neighbor_addresses = []
+    
     for rtr in network["routers"]:
         neighbor = rtr["ID"][0]
         if neighbor != router:
+
+            # iBGP
             if network["routers"][neighbor-1]["AS"] == network["routers"][router-1]["AS"]:
                 for interface in network["routers"][neighbor-1]["interface"]:
                     if "Loopback" in interface[1]:
@@ -58,32 +66,76 @@ def BGP(network, router):
                         break
                 config += f" neighbor {neighbor_address} remote-as {network['routers'][neighbor-1]['AS']}\n"
                 config += f" neighbor {neighbor_address} update-source Loopback1\n"
-                neighbor_addresses.append(neighbor_address)
+                neighbor_addresses["iBGP"].append((neighbor_address,neighbor))
+
+            # eBGP
             elif neighbor in network["adjDic"][router]:
                 for interface in network["routers"][neighbor-1]["interface"]:
                     if router in interface[0]:
                         neighbor_address = interface[2]
                         break
                 config += f" neighbor {neighbor_address} remote-as {network['routers'][neighbor-1]['AS']}\n"
-                neighbor_addresses.append(neighbor_address)
+                neighbor_addresses["eBGP"].append((neighbor_address,neighbor))
 
+    # Config de l'address-family
     config += " !\n address-family ipv4\n exit-address-family\n !\n address-family ipv6 unicast\n"
-    for neighbor_address in neighbor_addresses:
+
+    # iBGP
+    for (neighbor_address,neighborID) in neighbor_addresses["iBGP"]:
         config += f"  neighbor {neighbor_address} activate\n"
-    if border_router(network, router):
-        config += f"  network {''.join(network['AS'][network['routers'][router-1]['AS']-1]['networkIP'])}\n"
-    else:
+        config += f"  neighbor {neighbor_address} send-community\n"
+        # Rejoindre son sous réseau
         for subNet in network["AS"][network["routers"][router-1]["AS"]-1]["subNets"]:
             if belongs_to_subNet(network, router, subNet):
                 config += f"  network {''.join(subNet)}\n"
+    # eBGP
+    for (neighbor_address,neighborID) in neighbor_addresses["eBGP"]:
+        config += f"  neighbor {neighbor_address} activate\n"
+        config += BGP_Border(network, router,neighbor_address,neighborID)
     
-    if border_router(network, router):
-        for subNet in network["InterAS"]["subNets"]:
-            if belongs_to_subNet(network, router, subNet):
-                config += f"  network {''.join(subNet)}\n"
-        
-    config += " exit-address-family\n"
+    config += " exit-address-family\n!\n"
+
+    config += BGP_Routemap(network)
+
     return config 
+
+def BGP_Border(network,router,neighbor_address,neighborID):
+
+    # Application des route-map
+    neighborType = network["AS"][network["routers"][router-1]["AS"]-1]["relations"][str(network["routers"][neighborID-1]["AS"])]
+    config = f"  neighbor {neighbor_address} route-map {neighborType} in\n"
+    config += f"  neighbor {neighbor_address} route-map {neighborType} out\n"
+
+    # Rejoindre son sous réseau
+    for subNet in network["InterAS"]["subNets"]:
+        if belongs_to_subNet(network, router, subNet):
+            config += f"  network {''.join(subNet)}\n"
+            
+    return config
+
+def BGP_Routemap(network):
+    config = f"ip bgp-community new-format\n!\n"
+    
+    # In route-map
+    for relation in network["Constants"]["LocPref"] :
+        config += f'route-map {relation} permit {int(network["Constants"]["LocPref"][relation]/10)}\n'
+        config += f' set local-preference {network["Constants"]["LocPref"][relation]}\n'
+        config += f' set community 100:{network["Constants"]["LocPref"][relation]}\n'
+    config += "!\n"
+
+    config += f'ip community-list {network["Constants"]["LocPref"]["Client"]} permit 100:{int(network["Constants"]["LocPref"]["Client"])}\n!\n'
+
+    # Out route-map
+    for relation in network["Constants"]["LocPref"] :
+        if relation != "Client" :
+            config += f'route-map {relation}_out permit {int(network["Constants"]["LocPref"][relation]/10)}\n'
+            config += f' match community 100:{int(network["Constants"]["LocPref"]["Client"]/10)}\n'
+            config += "!\n"
+        else :
+            config += f'route-map {relation}_out permit {int(network["Constants"]["LocPref"][relation]/10)}\n'
+            config += "!\n"
+
+    return config
 
 def config_router(network, routerID):
     config = f"!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n\n!\nversion 15.2\nservice timestamps debug datetime msec\nservice timestamps log datetime msec\n!\nhostname {network['routers'][routerID-1]['ID'][1]}\n!\nboot-start-marker\nboot-end-marker\n!\n!\n!\nno aaa new-model\nno ip icmp rate-limit unreachable\nip cef\n!\n!\n!\n!\n!\n!\nno ip domain lookup\nipv6 unicast-routing\nipv6 cef\n!\n!\nmultilink bundle-name authenticated\n!\n!\n!\n!\n!\n!\n!\n!\n!\nip tcp synwait-time 5\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n"
@@ -108,6 +160,7 @@ def config_router(network, routerID):
             config += f"interface {interface[1]}\n no ip address\n shutdown\n!\n"
 
     config += BGP(network, routerID)
+    
 
     if "RIP" in network["AS"][network["routers"][routerID-1]["AS"]-1]["IGP"]:
         config += RIP()
