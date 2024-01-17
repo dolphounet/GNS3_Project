@@ -1,3 +1,11 @@
+import telnetlib
+import time
+
+
+def writeLine(tn, line):
+    tn.write(line.encode()+b"\r\n")
+    time.sleep(0.1)
+
 def border_router(network, router):
     for interface in network["routers"][router-1]["interface"]:
         if interface[0] != [] and network["routers"][interface[0][0]-1]["AS"] != network["routers"][router-1]["AS"]:
@@ -7,10 +15,12 @@ def border_router(network, router):
 def belongs_to_subNet(network, router, subNet):
     return subNet in network["routers"][router-1]["subNets"]
 
-def addressing_if(interface):
+def addressing_if(tn, interface):
     address = "".join(interface[2:])
-    config = f" ipv6 address {address}\n"
-    return config
+    writeLine(tn, f"interface {interface[1]}")
+    writeLine(tn, "ipv6 enable")
+    writeLine(tn, f"ipv6 address {address}")
+
 
 def passive_if(network, router):
     config = ""
@@ -19,12 +29,11 @@ def passive_if(network, router):
             config += f" passive-interface {interface[1]}\n"
     return config
 
-def OSPF_if(network,interface):
-    config = " ipv6 ospf 10 area 0\n"
+def OSPF_if(tn, network,interface):
+    writeLine(tn, "ipv6 ospf 10 area 0")
     for interfaceType in network["Constants"]["Bandwith"]:
         if interfaceType in interface[1] and interfaceType != "Reference":
-            config += f" bandwidth {network['Constants']['Bandwith'][interfaceType]}\n"
-    return config
+            writeLine(tn, f"bandwidth {network['Constants']['Bandwith'][interfaceType]}")
 
 def OSPF(network, router):
     routerId = f"{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}"
@@ -34,11 +43,9 @@ def OSPF(network, router):
     config += "!\n"
     return config
 
-def RIP_if(network, router, interface):
-    config = ""
+def RIP_if(tn, network, router, interface):
     if interface[1] == "Loopback1" or network["routers"][interface[0][0]-1]["AS"] == network["routers"][router-1]["AS"]:
-        config += " ipv6 rip BeginRIP enable\n"
-    return config
+        writeLine(tn, "ipv6 rip BeginRIP enable")
 
 def RIP():
     config = "ipv6 router rip BeginRIP\n redistribute connected\n!\n"
@@ -86,27 +93,27 @@ def BGP(network, router):
     return config 
 
 def config_router(network, routerID):
-    config = f"!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n\n!\nversion 15.2\nservice timestamps debug datetime msec\nservice timestamps log datetime msec\n!\nhostname {network['routers'][routerID-1]['ID'][1]}\n!\nboot-start-marker\nboot-end-marker\n!\n!\n!\nno aaa new-model\nno ip icmp rate-limit unreachable\nip cef\n!\n!\n!\n!\n!\n!\nno ip domain lookup\nipv6 unicast-routing\nipv6 cef\n!\n!\nmultilink bundle-name authenticated\n!\n!\n!\n!\n!\n!\n!\n!\n!\nip tcp synwait-time 5\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n"
+    port = network["routers"][routerID-1]["Port"]
+    host = "localhost"
+    tn = telnetlib.Telnet(host, port)
+    writeLine(tn, "enable")
+    writeLine(tn, "write erase") #To erase current configuration
+    writeLine(tn, "") #To confirm the configuration deletion
+    tn.read_until(b"Erase of nvram: complete") #Waiting for the deletion to finish
+    writeLine(tn, "conf t")
+    writeLine(tn, "ipv6 unicast-routing")
     for interface in network["routers"][routerID-1]["interface"]:
         if interface[0] != [] or "Loopback" in interface[1]:
-            if "Loopback" in interface[1]:
-                config += f"interface {interface[1]}\n no ip address\n ipv6 enable\n{addressing_if(interface)}"
-            elif "Fast" in interface[1]:
-                config += f"interface {interface[1]}\n no ip address\n duplex full\n ipv6 enable\n{addressing_if(interface)}"
-
-            else:
-                config += f"interface {interface[1]}\n no ip address\n ipv6 enable\n{addressing_if(interface)}"
-
+            addressing_if(tn, interface)
             if "RIP" in network["AS"][network["routers"][routerID-1]["AS"]-1]["IGP"]:
-                config += RIP_if(network, routerID, interface)
+                RIP_if(tn, network, routerID, interface)
 
             if "OSPF" in network["AS"][network["routers"][routerID-1]["AS"]-1]["IGP"]:
-                config += OSPF_if(network,interface)
-
-            config += "!\n"
-        else:
-            config += f"interface {interface[1]}\n no ip address\n shutdown\n!\n"
-
+                OSPF_if(tn, network,interface)
+            writeLine(tn, "no shutdown")
+            writeLine(tn, "exit")
+    tn.close()
+    """
     config += BGP(network, routerID)
 
     if "RIP" in network["AS"][network["routers"][routerID-1]["AS"]-1]["IGP"]:
@@ -116,4 +123,6 @@ def config_router(network, routerID):
         config += OSPF(network, routerID)
 
     config += "!\n!\n!\ncontrol-plane\n!\n!\nline con 0\n exec-timeout 0 0\n privilege level 15\n logging synchronous\n stopbits 1\nline aux 0\n exec-timeout 0 0\n privilege level 15\n logging synchronous\n stopbits 1\nline vty 0 4\n login\n!\n!\nend"
+    
     return config
+    """
