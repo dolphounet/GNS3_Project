@@ -1,5 +1,6 @@
-from filesIO import readJson, placeBot
+from filesIO import readJson
 from IPattribution import attributeIP
+from networkConfig import config_router
 
 
 
@@ -11,8 +12,9 @@ def main():
     # Attribution des IP
     attributeIP(network)
 
-    # Ecriture des fichiers config
-    placeBot(network,input("Input a file path : "))
+    # Ecriture de la configuration avec telnet
+    for router in network["routers"]:
+        config_router(network, router["ID"][0])
 
 if __name__ == "__main__":
     main()
