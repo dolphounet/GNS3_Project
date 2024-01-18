@@ -7,14 +7,14 @@ def main():
 
     # Path to GNS3 project
     # path = "/home/maxence/GNS3/projects/ProjetGNSDEOUFMALADE14ROUTEURS"
-    path = "C:\Doc_User\Projets\Programming\GNS3_Local"
+    path = "C:\Doc_User\Projets\Programming\GNS3_Local\projetCommunities"
 
     # Récupération des informations du réseau
     network = readJson('Network_Intent.json')
-
+    '''
     for elem in network["AS"]:
         print(elem)
-
+    '''
     # Attribution des IP
     attributeIP(network)
 
@@ -24,8 +24,9 @@ def main():
     for router in network["routers"]:
         writeCfg(f'output/i{router["ID"][0]}_startup-config.cfg', config_router(network, router["ID"][0]))
     '''
-    for elem in network["InterAS"]:
-        print(f'{elem} : {network["InterAS"][elem]}')
+    for elem in network["InterAS"]["InterASlinks"]["Links"]:
+        print(f'{elem} : {network["InterAS"]["InterASlinks"]["Links"][elem]}')
+
     
     
     
