@@ -104,7 +104,9 @@ def BGP_Border(network,router,neighbor_address,neighborID):
     # Application des route-map
     neighborType = network["AS"][network["routers"][router-1]["AS"]-1]["relations"][str(network["routers"][neighborID-1]["AS"])]
     config = f"  neighbor {neighbor_address} route-map {neighborType} in\n"
-    config += f"  neighbor {neighbor_address} route-map {neighborType} out\n"
+    # Route-map out
+    #if neighborType != "Client":
+    config += f"  neighbor {neighbor_address} route-map {neighborType}_out out\n"
 
     # Rejoindre son sous réseau
     for subNet in network["InterAS"]["subNets"]:
@@ -123,17 +125,18 @@ def BGP_Routemap(network):
         config += f' set community 100:{network["Constants"]["LocPref"][relation]}\n'
     config += "!\n"
 
-    config += f'ip community-list {network["Constants"]["LocPref"]["Client"]} permit 100:{int(network["Constants"]["LocPref"]["Client"])}\n!\n'
-
     # Out route-map
     for relation in network["Constants"]["LocPref"] :
         if relation != "Client" :
-            config += f'route-map {relation}_out permit {int(network["Constants"]["LocPref"][relation]/10)}\n'
-            config += f' match community 100:{int(network["Constants"]["LocPref"]["Client"]/10)}\n'
+            config += f'ip community-list {network["Constants"]["LocPref"]["Client"]} permit 100:{int(network["Constants"]["LocPref"][relation])}\n!\n'
+            config += f'route-map {relation}_out deny {int(network["Constants"]["LocPref"][relation]/10)}\n'
+            config += f' match community {network["Constants"]["LocPref"][relation]}\n'
             config += "!\n"
+            
         else :
             config += f'route-map {relation}_out permit {int(network["Constants"]["LocPref"][relation]/10)}\n'
             config += "!\n"
+        
 
     return config
 
