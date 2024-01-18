@@ -87,7 +87,7 @@
             "loopbackNetworkIP": ["2001:200:200:41::","/64"],
             "IGP": ["OSPF"],
             "relations" : {
-                "2" : "Client"
+                "2" : "Provider"
             }
         },
         {
