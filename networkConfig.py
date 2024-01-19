@@ -51,7 +51,6 @@ def BGP(network, router):
     routerId = f"{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}"
     neighbor_addresses = {"iBGP" : [], "eBGP" : []}
 
-    
     config = f"router bgp {network['routers'][router-1]['AS']}\n no bgp default ipv4-unicast\n bgp router-id {routerId}\n"
     
     for rtr in network["routers"]:
@@ -77,25 +76,38 @@ def BGP(network, router):
                 config += f" neighbor {neighbor_address} remote-as {network['routers'][neighbor-1]['AS']}\n"
                 neighbor_addresses["eBGP"].append((neighbor_address,neighbor))
 
-    # Config de l'address-family
+    # Config de l'address-family en ipv6
     config += " !\n address-family ipv4\n exit-address-family\n !\n address-family ipv6 unicast\n"
 
+    once = False
     # iBGP
     for (neighbor_address,neighborID) in neighbor_addresses["iBGP"]:
         config += f"  neighbor {neighbor_address} activate\n"
         config += f"  neighbor {neighbor_address} send-community\n"
-        # Rejoindre son sous réseau
-        for subNet in network["AS"][network["routers"][router-1]["AS"]-1]["subNets"]:
-            if belongs_to_subNet(network, router, subNet):
-                config += f"  network {''.join(subNet)}\n"
+        if not once :
+            # Rejoindre son sous réseau
+            for subNet in network["AS"][network["routers"][router-1]["AS"]-1]["subNets"]:
+                if belongs_to_subNet(network, router, subNet):
+                    config += f"  network {''.join(subNet)} route-map {network['routers'][router-1]['AS']}_Client_in\n"
+            once = True
+
     # eBGP
     for (neighbor_address,neighborID) in neighbor_addresses["eBGP"]:
         config += f"  neighbor {neighbor_address} activate\n"
         config += BGP_Border(network, router,neighbor_address,neighborID)
+        if not once :
+            # Rejoindre son sous réseau
+            for subNet in network["InterAS"]["subNets"]:
+                if belongs_to_subNet(network, router, subNet):
+                    config += f"  network {''.join(subNet)} route-map {network['routers'][router-1]['AS']}_Client_in\n"
+            config += f'  network {network["AS"][network["routers"][router-1]["AS"]-1]["networkIP"][0]}{network["AS"][network["routers"][router-1]["AS"]-1]["networkIP"][1]}\n'
+            once = True
+
     
     config += " exit-address-family\n!\n"
 
-    config += BGP_Routemap(network)
+    config += BGP_CommunityLists(network,router)
+    config += BGP_Routemap(network,router)
 
     return config 
 
@@ -103,42 +115,48 @@ def BGP_Border(network,router,neighbor_address,neighborID):
 
     # Application des route-map
     neighborType = network["AS"][network["routers"][router-1]["AS"]-1]["relations"][str(network["routers"][neighborID-1]["AS"])]
-    config = f"  neighbor {neighbor_address} route-map {neighborType} in\n"
+    config = f"  neighbor {neighbor_address} route-map {network['routers'][router-1]['AS']}_{neighborType}_in in\n"
     # Route-map out
-    #if neighborType != "Client":
-    config += f"  neighbor {neighbor_address} route-map {neighborType}_out out\n"
+    config += f"  neighbor {neighbor_address} route-map {network['routers'][router-1]['AS']}_{neighborType}_out out\n"
 
-    # Rejoindre son sous réseau
-    for subNet in network["InterAS"]["subNets"]:
-        if belongs_to_subNet(network, router, subNet):
-            config += f"  network {''.join(subNet)}\n"
-            
     return config
 
-def BGP_Routemap(network):
-    config = f"ip bgp-community new-format\n!\n"
+def BGP_CommunityLists(network,router):
+    config = f'ipv6 route {network["AS"][network["routers"][router-1]["AS"]-1]["networkIP"][0]}{network["AS"][network["routers"][router-1]["AS"]-1]["networkIP"][1]} Null0\n'
+    config += f"ip bgp-community new-format\n!\n"
+
+    for relation in network["Constants"]["LocPref"]:
+        if relation != "Client" :
+            config += f'ip community-list {network["Constants"]["LocPref"][relation]} permit {network["routers"][router-1]["AS"]}:{network["Constants"]["LocPref"]["Client"]}\n'
+            config += f'ip community-list {network["Constants"]["LocPref"][relation]} deny {network["routers"][router-1]["AS"]}:{network["Constants"]["LocPref"]["Peer"]}\n'
+            config += f'ip community-list {network["Constants"]["LocPref"][relation]} deny {network["routers"][router-1]["AS"]}:{network["Constants"]["LocPref"]["Provider"]}\n!\n'
+
+        elif relation == "Client" :
+            config += f'ip community-list {network["Constants"]["LocPref"][relation]} permit {network["routers"][router-1]["AS"]}:{network["Constants"]["LocPref"]["Client"]}\n'
+            config += f'ip community-list {network["Constants"]["LocPref"][relation]} permit {network["routers"][router-1]["AS"]}:{network["Constants"]["LocPref"]["Peer"]}\n'
+            config += f'ip community-list {network["Constants"]["LocPref"][relation]} permit {network["routers"][router-1]["AS"]}:{network["Constants"]["LocPref"]["Provider"]}\n!\n'
+
+    return config
+
+def BGP_Routemap(network,router):
+    config = ""
     
     # In route-map
-    for relation in network["Constants"]["LocPref"] :
-        config += f'route-map {relation} permit {int(network["Constants"]["LocPref"][relation]/10)}\n'
+    for relation in network["Constants"]["LocPref"]:
+        config += f'route-map {network["routers"][router-1]["AS"]}_{relation}_in permit {int(network["Constants"]["LocPref"][relation]/10)}\n'
         config += f' set local-preference {network["Constants"]["LocPref"][relation]}\n'
-        config += f' set community 100:{network["Constants"]["LocPref"][relation]}\n'
-    config += "!\n"
-
+        config += f' set community {network["routers"][router-1]["AS"]}:{network["Constants"]["LocPref"][relation]}\n!\n'
+    
     # Out route-map
     for relation in network["Constants"]["LocPref"] :
-        if relation != "Client" :
-            config += f'ip community-list {network["Constants"]["LocPref"]["Client"]} permit 100:{int(network["Constants"]["LocPref"][relation])}\n!\n'
-            config += f'route-map {relation}_out deny {int(network["Constants"]["LocPref"][relation]/10)}\n'
-            config += f' match community {network["Constants"]["LocPref"][relation]}\n'
-            config += "!\n"
-            
-        else :
-            config += f'route-map {relation}_out permit {int(network["Constants"]["LocPref"][relation]/10)}\n'
-            config += "!\n"
-        
+        config += f'route-map {network["routers"][router-1]["AS"]}_{relation}_out permit {int(network["Constants"]["LocPref"][relation]/10)}\n'
+        config += f' match community {network["Constants"]["LocPref"][relation]}\n!\n'
+
 
     return config
+
+
+
 
 def config_router(network, routerID):
     config = f"!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n\n!\nversion 15.2\nservice timestamps debug datetime msec\nservice timestamps log datetime msec\n!\nhostname {network['routers'][routerID-1]['ID'][1]}\n!\nboot-start-marker\nboot-end-marker\n!\n!\n!\nno aaa new-model\nno ip icmp rate-limit unreachable\nip cef\n!\n!\n!\n!\n!\n!\nno ip domain lookup\nipv6 unicast-routing\nipv6 cef\n!\n!\nmultilink bundle-name authenticated\n!\n!\n!\n!\n!\n!\n!\n!\n!\nip tcp synwait-time 5\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n"
