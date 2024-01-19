@@ -18,9 +18,6 @@ def main():
     # Ecriture des fichiers config
     placeBot(network,path)
 
-    for elem in network["InterAS"]["InterASlinks"]["Links"]:
-        print(f'{elem} : {network["InterAS"]["InterASlinks"]["Links"][elem]}')
-
 if __name__ == "__main__":
     main()
 
