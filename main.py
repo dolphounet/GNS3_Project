@@ -18,6 +18,10 @@ def main():
     # Ecriture des fichiers config
     placeBot(network,path)
 
+    for router in network["routers"]:
+        for elem in router:
+            print(f"{elem} : {router[elem]}")
+
 if __name__ == "__main__":
     main()
 
