@@ -26,7 +26,7 @@ def OSPF_if(network,interface):
         if interfaceType in interface['name'] and interfaceType != "Reference":
             config += f" bandwidth {network['Constants']['Bandwith'][interfaceType]}\n"
             if interface['metricOSPF'] != "":
-                config += f" ipv6 ospf cost " + interface['metricOSPF'] + "\n"
+                config += f" ipv6 ospf cost {interface['metricOSPF']}\n"
     return config
 
 def OSPF(network, router):
