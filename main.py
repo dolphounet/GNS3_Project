@@ -8,7 +8,7 @@ import threading
 def main():
 
     # Récupération des informations du réseau
-    network = readJson('Network_Intent_comm.json')
+    network = readJson('Network_Intent.json')
 
     # Attribution des IP
     attributeIP(network)
