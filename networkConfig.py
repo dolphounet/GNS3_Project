@@ -4,7 +4,7 @@ import time
 
 def writeLine(tn, line):
     tn.write(line.encode()+b"\r\n")
-    time.sleep(0.1)
+    time.sleep(0.01)
 
 def border_router(network, router):
     for interface in network["routers"][router-1]["interface"]:
@@ -51,14 +51,21 @@ def RIP(tn):
     writeLine(tn, "exit")
 
 def BGP(tn, network, router):
+    """
+    Ca s'applique pour le routeur d'ID router
+    """
+
     routerId = f"{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}"
+    neighbor_addresses = {"iBGP" : [], "eBGP" : []}
+
     writeLine(tn, f"router bgp {network['routers'][router-1]['AS']}")
     writeLine(tn, "no bgp default ipv4-unicast")
     writeLine(tn, f"bgp router-id {routerId}")
-    neighbor_addresses = []
     for rtr in network["routers"]:
         neighbor = rtr["ID"][0]
         if neighbor != router:
+
+            # iBGP
             if network["routers"][neighbor-1]["AS"] == network["routers"][router-1]["AS"]:
                 for interface in network["routers"][neighbor-1]["interface"]:
                     if "Loopback" in interface[1]:
@@ -66,31 +73,86 @@ def BGP(tn, network, router):
                         break
                 writeLine(tn, f"neighbor {neighbor_address} remote-as {network['routers'][neighbor-1]['AS']}")
                 writeLine(tn, f"neighbor {neighbor_address} update-source Loopback1")
-                neighbor_addresses.append(neighbor_address)
+                neighbor_addresses["iBGP"].append((neighbor_address,neighbor))
+
+            # eBGP
             elif neighbor in network["adjDic"][router]:
                 for interface in network["routers"][neighbor-1]["interface"]:
                     if router in interface[0]:
                         neighbor_address = interface[2]
                         break
                 writeLine(tn, f"neighbor {neighbor_address} remote-as {network['routers'][neighbor-1]['AS']}")
-                neighbor_addresses.append(neighbor_address)
+                neighbor_addresses["eBGP"].append((neighbor_address,neighbor))
+    writeLine(tn, "exit")
 
+    BGP_CommunityLists(tn, network,router)
+    BGP_Routemap(tn, network,router) 
+
+    # Config de l'address-family en ipv6
+    writeLine(tn, f"router bgp {network['routers'][router-1]['AS']}")
     writeLine(tn, "address-family ipv6 unicast")
-    for neighbor_address in neighbor_addresses:
+    once = False
+    # iBGP
+    for (neighbor_address,neighborID) in neighbor_addresses["iBGP"]:
         writeLine(tn, f"neighbor {neighbor_address} activate")
-    if border_router(network, router):
-        writeLine(tn, f"network {''.join(network['AS'][network['routers'][router-1]['AS']-1]['networkIP'])}")
-    else:
-        for subNet in network["AS"][network["routers"][router-1]["AS"]-1]["subNets"]:
-            if belongs_to_subNet(network, router, subNet):
-                writeLine(tn, f"network {''.join(subNet)}")
-    if border_router(network, router):
-        for subNet in network["InterAS"]["subNets"]:
-            if belongs_to_subNet(network, router, subNet):
-                writeLine(tn, f"network {''.join(subNet)}")
-        
+        writeLine(tn, f"neighbor {neighbor_address} send-community")
+        if not once :
+            # Rejoindre son sous réseau
+            for subNet in network["AS"][network["routers"][router-1]["AS"]-1]["subNets"]:
+                if belongs_to_subNet(network, router, subNet):
+                    writeLine(tn, f"network {''.join(subNet)} route-map {network['routers'][router-1]['AS']}_Client_in")
+            once = True
+
+    # eBGP
+    for (neighbor_address,neighborID) in neighbor_addresses["eBGP"]:
+        writeLine(tn, f"neighbor {neighbor_address} activate")
+        BGP_Border(tn, network, router,neighbor_address,neighborID)
+        if not once :
+            # Rejoindre son sous réseau
+            for subNet in network["InterAS"]["subNets"]:
+                if belongs_to_subNet(network, router, subNet):
+                    writeLine(tn, f"network {''.join(subNet)} route-map {network['routers'][router-1]['AS']}_Client_in")
+            writeLine(tn, f'network {network["AS"][network["routers"][router-1]["AS"]-1]["networkIP"][0]}{network["AS"][network["routers"][router-1]["AS"]-1]["networkIP"][1]}')
+            once = True 
     writeLine(tn, "exit-address-family")
-    writeLine(tn, "exit") 
+    writeLine(tn, "exit")
+
+def BGP_Border(tn, network,router,neighbor_address,neighborID):
+
+    # Application des route-map
+    neighborType = network["AS"][network["routers"][router-1]["AS"]-1]["relations"][str(network["routers"][neighborID-1]["AS"])]
+    writeLine(tn, f"neighbor {neighbor_address} route-map {network['routers'][router-1]['AS']}_{neighborType}_in in")
+    # Route-map out
+    writeLine(tn, f"neighbor {neighbor_address} route-map {network['routers'][router-1]['AS']}_{neighborType}_out out")
+
+def BGP_CommunityLists(tn, network, router):
+    writeLine(tn, f'ipv6 route {network["AS"][network["routers"][router-1]["AS"]-1]["networkIP"][0]}{network["AS"][network["routers"][router-1]["AS"]-1]["networkIP"][1]} Null0')
+    writeLine(tn, f"ip bgp-community new-format")
+
+    for relation in network["Constants"]["LocPref"]:
+        if relation != "Client" :
+            writeLine(tn, f'ip community-list {network["Constants"]["LocPref"][relation]} permit {network["routers"][router-1]["AS"]}:{network["Constants"]["LocPref"]["Client"]}')
+            writeLine(tn, f'ip community-list {network["Constants"]["LocPref"][relation]} deny {network["routers"][router-1]["AS"]}:{network["Constants"]["LocPref"]["Peer"]}')
+            writeLine(tn, f'ip community-list {network["Constants"]["LocPref"][relation]} deny {network["routers"][router-1]["AS"]}:{network["Constants"]["LocPref"]["Provider"]}')
+
+        elif relation == "Client" :
+            writeLine(tn, f'ip community-list {network["Constants"]["LocPref"][relation]} permit {network["routers"][router-1]["AS"]}:{network["Constants"]["LocPref"]["Client"]}')
+            writeLine(tn, f'ip community-list {network["Constants"]["LocPref"][relation]} permit {network["routers"][router-1]["AS"]}:{network["Constants"]["LocPref"]["Peer"]}')
+            writeLine(tn, f'ip community-list {network["Constants"]["LocPref"][relation]} permit {network["routers"][router-1]["AS"]}:{network["Constants"]["LocPref"]["Provider"]}')
+
+def BGP_Routemap(tn, network,router):
+    
+    # In route-map
+    for relation in network["Constants"]["LocPref"]:
+        writeLine(tn, f'route-map {network["routers"][router-1]["AS"]}_{relation}_in permit {int(network["Constants"]["LocPref"][relation]/10)}')
+        writeLine(tn, f'set local-preference {network["Constants"]["LocPref"][relation]}')
+        writeLine(tn, f'set community {network["routers"][router-1]["AS"]}:{network["Constants"]["LocPref"][relation]}')
+        writeLine(tn, "exit")
+    
+    # Out route-map
+    for relation in network["Constants"]["LocPref"] :
+        writeLine(tn, f'route-map {network["routers"][router-1]["AS"]}_{relation}_out permit {int(network["Constants"]["LocPref"][relation]/10)}')
+        writeLine(tn, f'match community {network["Constants"]["LocPref"][relation]}')
 
 def config_router(network, routerID):
     port = network["routers"][routerID-1]["Port"]
@@ -112,7 +174,7 @@ def config_router(network, routerID):
                 OSPF_if(tn, network,interface)
             writeLine(tn, "no shutdown")
             writeLine(tn, "exit")
-
+    
     BGP(tn, network, routerID)
 
     if "RIP" in network["AS"][network["routers"][routerID-1]["AS"]-1]["IGP"]:
