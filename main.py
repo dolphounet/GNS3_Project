@@ -14,13 +14,11 @@ def main():
     
     # Attribution des IP
     attributeIP(network)
-
+     
     # Ecriture des fichiers config
     placeBot(network,path)
 
-    for router in network["routers"]:
-        for elem in router:
-            print(f"{elem} : {router[elem]}")
+    print("Fichier placés !")
 
 if __name__ == "__main__":
     main()
