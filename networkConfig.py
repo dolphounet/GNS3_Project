@@ -114,7 +114,7 @@ def BGP(tn, network, router):
             for subNet in network["InterAS"]["subNets"]:
                 if belongs_to_subNet(network, router, subNet):
                     writeLine(tn, f"network {''.join(subNet)} route-map {network['routers'][router-1]['AS']}_Client_in")
-            writeLine(tn, f'network {network["AS"][network["routers"][router-1]["AS"]-1]["networkIP"][0]}{network["AS"][network["routers"][router-1]["AS"]-1]["networkIP"][1]}')
+            writeLine(tn, f"network {network['AS'][network['routers'][router-1]['AS']-1]['networkIP'][0]}{network['AS'][network['routers'][router-1]['AS']-1]['networkIP'][1]}")
             once = True 
     writeLine(tn, "exit-address-family")
     writeLine(tn, "exit")
@@ -127,34 +127,35 @@ def BGP_Border(tn, network,router,neighbor_address,neighborID):
     # Route-map out
     writeLine(tn, f"neighbor {neighbor_address} route-map {network['routers'][router-1]['AS']}_{neighborType}_out out")
 
-def BGP_CommunityLists(tn, network, router):
-    writeLine(tn, f'ipv6 route {network["AS"][network["routers"][router-1]["AS"]-1]["networkIP"][0]}{network["AS"][network["routers"][router-1]["AS"]-1]["networkIP"][1]} Null0')
-    writeLine(tn, f"ip bgp-community new-format")
+
+def BGP_CommunityLists(tn, network,router):
+    writeLine(tn, f"ipv6 route {network['AS'][network['routers'][router-1]['AS']-1]['networkIP'][0]}{network['AS'][network['routers'][router-1]['AS']-1]['networkIP'][1]} Null0")
+    writeLine(tn, "ip bgp-community new-format")
 
     for relation in network["Constants"]["LocPref"]:
         if relation != "Client" :
-            writeLine(tn, f'ip community-list {network["Constants"]["LocPref"][relation]} permit {network["routers"][router-1]["AS"]}:{network["Constants"]["LocPref"]["Client"]}')
-            writeLine(tn, f'ip community-list {network["Constants"]["LocPref"][relation]} deny {network["routers"][router-1]["AS"]}:{network["Constants"]["LocPref"]["Peer"]}')
-            writeLine(tn, f'ip community-list {network["Constants"]["LocPref"][relation]} deny {network["routers"][router-1]["AS"]}:{network["Constants"]["LocPref"]["Provider"]}')
+            writeLine(tn, f"ip community-list {network['Constants']['LocPref'][relation]} permit {network['routers'][router-1]['AS']}:{network['Constants']['LocPref']['Client']}")
+            writeLine(tn, f"ip community-list {network['Constants']['LocPref'][relation]} deny {network['routers'][router-1]['AS']}:{network['Constants']['LocPref']['Peer']}")
+            writeLine(tn, f"ip community-list {network['Constants']['LocPref'][relation]} deny {network['routers'][router-1]['AS']}:{network['Constants']['LocPref']['Provider']}")
 
         elif relation == "Client" :
-            writeLine(tn, f'ip community-list {network["Constants"]["LocPref"][relation]} permit {network["routers"][router-1]["AS"]}:{network["Constants"]["LocPref"]["Client"]}')
-            writeLine(tn, f'ip community-list {network["Constants"]["LocPref"][relation]} permit {network["routers"][router-1]["AS"]}:{network["Constants"]["LocPref"]["Peer"]}')
-            writeLine(tn, f'ip community-list {network["Constants"]["LocPref"][relation]} permit {network["routers"][router-1]["AS"]}:{network["Constants"]["LocPref"]["Provider"]}')
+            writeLine(tn, f"ip community-list {network['Constants']['LocPref'][relation]} permit {network['routers'][router-1]['AS']}:{network['Constants']['LocPref']['Client']}")
+            writeLine(tn, f"ip community-list {network['Constants']['LocPref'][relation]} permit {network['routers'][router-1]['AS']}:{network['Constants']['LocPref']['Peer']}")
+            writeLine(tn, f"ip community-list {network['Constants']['LocPref'][relation]} permit {network['routers'][router-1]['AS']}:{network['Constants']['LocPref']['Provider']}")
 
 def BGP_Routemap(tn, network,router):
     
     # In route-map
     for relation in network["Constants"]["LocPref"]:
-        writeLine(tn, f'route-map {network["routers"][router-1]["AS"]}_{relation}_in permit {int(network["Constants"]["LocPref"][relation]/10)}')
-        writeLine(tn, f'set local-preference {network["Constants"]["LocPref"][relation]}')
-        writeLine(tn, f'set community {network["routers"][router-1]["AS"]}:{network["Constants"]["LocPref"][relation]}')
+        writeLine(tn, f"route-map {network['routers'][router-1]['AS']}_{relation}_in permit {int(network['Constants']['LocPref'][relation]/10)}")
+        writeLine(tn, f"set local-preference {network['Constants']['LocPref'][relation]}")
+        writeLine(tn, f"set community {network['routers'][router-1]['AS']}:{network['Constants']['LocPref'][relation]}")
         writeLine(tn, "exit")
     
     # Out route-map
     for relation in network["Constants"]["LocPref"] :
-        writeLine(tn, f'route-map {network["routers"][router-1]["AS"]}_{relation}_out permit {int(network["Constants"]["LocPref"][relation]/10)}')
-        writeLine(tn, f'match community {network["Constants"]["LocPref"][relation]}')
+        writeLine(tn, f"route-map {network['routers'][router-1]['AS']}_{relation}_out permit {int(network['Constants']['LocPref'][relation]/10)}")
+        writeLine(tn, f"match community {network['Constants']['LocPref'][relation]}")
 
 def config_router(network, routerID):
     port = network["routers"][routerID-1]["Port"]
