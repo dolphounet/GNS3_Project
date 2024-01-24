@@ -104,7 +104,7 @@ def BGP(network, router):
             for subNet in network["InterAS"]["subNets"]:
                 if belongs_to_subNet(network, router, subNet):
                     config += f"  network {''.join(subNet)} route-map {network['routers'][router-1]['AS']}_Client_in\n"
-            config += f'  network {network["AS"][network["routers"][router-1]["AS"]-1]["networkIP"][0]}{network["AS"][network["routers"][router-1]["AS"]-1]["networkIP"][1]}\n'
+            config += f"  network {network['AS'][network['routers'][router-1]['AS']-1]['networkIP'][0]}{network['AS'][network['routers'][router-1]['AS']-1]['networkIP'][1]}\n"
             once = True
 
     
@@ -126,19 +126,19 @@ def BGP_Border(network,router,neighbor_address,neighborID):
     return config
 
 def BGP_CommunityLists(network,router):
-    config = f'ipv6 route {network["AS"][network["routers"][router-1]["AS"]-1]["networkIP"][0]}{network["AS"][network["routers"][router-1]["AS"]-1]["networkIP"][1]} Null0\n'
+    config = f"ipv6 route {network['AS'][network['routers'][router-1]['AS']-1]['networkIP'][0]}{network['AS'][network['routers'][router-1]['AS']-1]['networkIP'][1]} Null0\n"
     config += f"ip bgp-community new-format\n!\n"
 
     for relation in network["Constants"]["LocPref"]:
         if relation != "Client" :
-            config += f'ip community-list {network["Constants"]["LocPref"][relation]} permit {network["routers"][router-1]["AS"]}:{network["Constants"]["LocPref"]["Client"]}\n'
-            config += f'ip community-list {network["Constants"]["LocPref"][relation]} deny {network["routers"][router-1]["AS"]}:{network["Constants"]["LocPref"]["Peer"]}\n'
-            config += f'ip community-list {network["Constants"]["LocPref"][relation]} deny {network["routers"][router-1]["AS"]}:{network["Constants"]["LocPref"]["Provider"]}\n!\n'
+            config += f"ip community-list {network['Constants']['LocPref'][relation]} permit {network['routers'][router-1]['AS']}:{network['Constants']['LocPref']['Client']}\n"
+            config += f"ip community-list {network['Constants']['LocPref'][relation]} deny {network['routers'][router-1]['AS']}:{network['Constants']['LocPref']['Peer']}\n"
+            config += f"ip community-list {network['Constants']['LocPref'][relation]} deny {network['routers'][router-1]['AS']}:{network['Constants']['LocPref']['Provider']}\n!\n"
 
         elif relation == "Client" :
-            config += f'ip community-list {network["Constants"]["LocPref"][relation]} permit {network["routers"][router-1]["AS"]}:{network["Constants"]["LocPref"]["Client"]}\n'
-            config += f'ip community-list {network["Constants"]["LocPref"][relation]} permit {network["routers"][router-1]["AS"]}:{network["Constants"]["LocPref"]["Peer"]}\n'
-            config += f'ip community-list {network["Constants"]["LocPref"][relation]} permit {network["routers"][router-1]["AS"]}:{network["Constants"]["LocPref"]["Provider"]}\n!\n'
+            config += f"ip community-list {network['Constants']['LocPref'][relation]} permit {network['routers'][router-1]['AS']}:{network['Constants']['LocPref']['Client']}\n"
+            config += f"ip community-list {network['Constants']['LocPref'][relation]} permit {network['routers'][router-1]['AS']}:{network['Constants']['LocPref']['Peer']}\n"
+            config += f"ip community-list {network['Constants']['LocPref'][relation]} permit {network['routers'][router-1]['AS']}:{network['Constants']['LocPref']['Provider']}\n!\n"
 
     return config
 
@@ -147,14 +147,14 @@ def BGP_Routemap(network,router):
     
     # In route-map
     for relation in network["Constants"]["LocPref"]:
-        config += f'route-map {network["routers"][router-1]["AS"]}_{relation}_in permit {int(network["Constants"]["LocPref"][relation]/10)}\n'
-        config += f' set local-preference {network["Constants"]["LocPref"][relation]}\n'
-        config += f' set community {network["routers"][router-1]["AS"]}:{network["Constants"]["LocPref"][relation]}\n!\n'
+        config += f"route-map {network['routers'][router-1]['AS']}_{relation}_in permit {int(network['Constants']['LocPref'][relation]/10)}\n"
+        config += f" set local-preference {network['Constants']['LocPref'][relation]}\n"
+        config += f" set community {network['routers'][router-1]['AS']}:{network['Constants']['LocPref'][relation]}\n!\n"
     
     # Out route-map
     for relation in network["Constants"]["LocPref"] :
-        config += f'route-map {network["routers"][router-1]["AS"]}_{relation}_out permit {int(network["Constants"]["LocPref"][relation]/10)}\n'
-        config += f' match community {network["Constants"]["LocPref"][relation]}\n!\n'
+        config += f"route-map {network['routers'][router-1]['AS']}_{relation}_out permit {int(network['Constants']['LocPref'][relation]/10)}\n"
+        config += f" match community {network['Constants']['LocPref'][relation]}\n!\n"
 
 
     return config
