@@ -9,9 +9,8 @@ def belongs_to_subNet(network, router, subNet):
 
 def addressing_if(interface):
     config = ""
-    if interface["neighbor"] != []:
-        address = interface["address"][0] + interface["address"][1]
-        config += f" ipv6 address {address}\n"
+    address = "".join(interface["address"])
+    config += f" ipv6 address {address}\n"
     return config
 
 def passive_if(network, router):
