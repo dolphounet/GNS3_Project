@@ -1,6 +1,6 @@
 def border_router(network, router):
     for interface in network["routers"][router-1]["interface"]:
-        if interface[0] != [] and network["routers"][interface[0][0]-1]["AS"] != network["routers"][router-1]["AS"]:
+        if interface["neighbor"] != [] and network["routers"][interface["neighbor"][0]-1]["AS"] != network["routers"][router-1]["AS"]:
             return True
     return False
 
@@ -8,22 +8,26 @@ def belongs_to_subNet(network, router, subNet):
     return subNet in network["routers"][router-1]["subNets"]
 
 def addressing_if(interface):
-    address = "".join(interface[2:])
-    config = f" ipv6 address {address}\n"
+    config = ""
+    if interface["neighbor"] != []:
+        address = interface["address"][0] + interface["address"][1]
+        config += f" ipv6 address {address}\n"
     return config
 
 def passive_if(network, router):
     config = ""
     for interface in network["routers"][router-1]["interface"]:
-        if interface[0] != [] and network["routers"][interface[0][0]-1]["AS"] != network["routers"][router-1]["AS"]:
-            config += f" passive-interface {interface[1]}\n"
+        if interface["neighbor"] != [] and network["routers"][interface["neighbor"][0]-1]["AS"] != network["routers"][router-1]["AS"]:
+            config += f" passive-interface {interface['name']}\n"
     return config
 
 def OSPF_if(network,interface):
     config = " ipv6 ospf 10 area 0\n"
     for interfaceType in network["Constants"]["Bandwith"]:
-        if interfaceType in interface[1] and interfaceType != "Reference":
+        if interfaceType in interface['name'] and interfaceType != "Reference":
             config += f" bandwidth {network['Constants']['Bandwith'][interfaceType]}\n"
+            if interface['metricOSPF'] != "":
+                config += f" ipv6 ospf cost " + interface['metricOSPF'] + "\n"
     return config
 
 def OSPF(network, router):
@@ -36,7 +40,7 @@ def OSPF(network, router):
 
 def RIP_if(network, router, interface):
     config = ""
-    if interface[1] == "Loopback1" or network["routers"][interface[0][0]-1]["AS"] == network["routers"][router-1]["AS"]:
+    if interface['name'] == "Loopback1" or network["routers"][interface["neighbor"][0]-1]["AS"] == network["routers"][router-1]["AS"]:
         config += " ipv6 rip BeginRIP enable\n"
     return config
 
@@ -60,8 +64,8 @@ def BGP(network, router):
             # iBGP
             if network["routers"][neighbor-1]["AS"] == network["routers"][router-1]["AS"]:
                 for interface in network["routers"][neighbor-1]["interface"]:
-                    if "Loopback" in interface[1]:
-                        neighbor_address = interface[2]
+                    if "Loopback" in interface["name"]:
+                        neighbor_address = interface["address"][0]
                         break
                 config += f" neighbor {neighbor_address} remote-as {network['routers'][neighbor-1]['AS']}\n"
                 config += f" neighbor {neighbor_address} update-source Loopback1\n"
@@ -70,8 +74,8 @@ def BGP(network, router):
             # eBGP
             elif neighbor in network["adjDic"][router]:
                 for interface in network["routers"][neighbor-1]["interface"]:
-                    if router in interface[0]:
-                        neighbor_address = interface[2]
+                    if router in interface["neighbor"]:
+                        neighbor_address = interface["address"][0]
                         break
                 config += f" neighbor {neighbor_address} remote-as {network['routers'][neighbor-1]['AS']}\n"
                 neighbor_addresses["eBGP"].append((neighbor_address,neighbor))
@@ -161,14 +165,14 @@ def BGP_Routemap(network,router):
 def config_router(network, routerID):
     config = f"!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n\n!\nversion 15.2\nservice timestamps debug datetime msec\nservice timestamps log datetime msec\n!\nhostname {network['routers'][routerID-1]['ID'][1]}\n!\nboot-start-marker\nboot-end-marker\n!\n!\n!\nno aaa new-model\nno ip icmp rate-limit unreachable\nip cef\n!\n!\n!\n!\n!\n!\nno ip domain lookup\nipv6 unicast-routing\nipv6 cef\n!\n!\nmultilink bundle-name authenticated\n!\n!\n!\n!\n!\n!\n!\n!\n!\nip tcp synwait-time 5\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n!\n"
     for interface in network["routers"][routerID-1]["interface"]:
-        if interface[0] != [] or "Loopback" in interface[1]:
-            if "Loopback" in interface[1]:
-                config += f"interface {interface[1]}\n no ip address\n ipv6 enable\n{addressing_if(interface)}"
-            elif "Fast" in interface[1]:
-                config += f"interface {interface[1]}\n no ip address\n duplex full\n ipv6 enable\n{addressing_if(interface)}"
+        if interface["neighbor"] != [] or "Loopback" in interface["name"]:
+            if "Loopback" in interface["name"]:
+                config += f"interface {interface['name']}\n no ip address\n ipv6 enable\n{addressing_if(interface)}"
+            elif "Fast" in interface["name"]:
+                config += f"interface {interface['name']}\n no ip address\n duplex full\n ipv6 enable\n{addressing_if(interface)}"
 
             else:
-                config += f"interface {interface[1]}\n no ip address\n ipv6 enable\n{addressing_if(interface)}"
+                config += f"interface {interface['name']}\n no ip address\n ipv6 enable\n{addressing_if(interface)}"
 
             if "RIP" in network["AS"][network["routers"][routerID-1]["AS"]-1]["IGP"]:
                 config += RIP_if(network, routerID, interface)
@@ -178,7 +182,7 @@ def config_router(network, routerID):
 
             config += "!\n"
         else:
-            config += f"interface {interface[1]}\n no ip address\n shutdown\n!\n"
+            config += f"interface {interface['name']}\n no ip address\n shutdown\n!\n"
 
     config += BGP(network, routerID)
     
