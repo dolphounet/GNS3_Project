@@ -8,30 +8,32 @@ def writeLine(tn, line):
 
 def border_router(network, router):
     for interface in network["routers"][router-1]["interface"]:
-        if interface[0] != [] and network["routers"][interface[0][0]-1]["AS"] != network["routers"][router-1]["AS"]:
+        if interface["neighbor"] != [] and network["routers"][interface["neighbor"][0]-1]["AS"] != network["routers"][router-1]["AS"]:
             return True
-    return False
+    return Falsedef 
 
 def belongs_to_subNet(network, router, subNet):
     return subNet in network["routers"][router-1]["subNets"]
 
 def addressing_if(tn, interface):
-    address = "".join(interface[2:])
-    writeLine(tn, f"interface {interface[1]}")
+    address = "".join(interface["address"])
+    writeLine(tn, f"interface {interface['name']}")
     writeLine(tn, "ipv6 enable")
     writeLine(tn, f"ipv6 address {address}")
 
 
 def passive_if(tn, network, router):
     for interface in network["routers"][router-1]["interface"]:
-        if interface[0] != [] and network["routers"][interface[0][0]-1]["AS"] != network["routers"][router-1]["AS"]:
-            writeLine(tn, f"passive-interface {interface[1]}")
+        if interface["neighbor"] != [] and network["routers"][interface["neighbor"][0]-1]["AS"] != network["routers"][router-1]["AS"]:
+            writeLine(tn, f"passive-interface {interface['name']}")
 
 def OSPF_if(tn, network,interface):
     writeLine(tn, "ipv6 ospf 10 area 0")
     for interfaceType in network["Constants"]["Bandwith"]:
-        if interfaceType in interface[1] and interfaceType != "Reference":
+        if interfaceType in interface["name"] and interfaceType != "Reference":
             writeLine(tn, f"bandwidth {network['Constants']['Bandwith'][interfaceType]}")
+            if interface['metricOSPF'] != "":
+                writeLine(tn, f"ipv6 ospf cost {interface['metricOSPF']}")
 
 def OSPF(tn, network, router):
     routerId = f"{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}.{network['routers'][router-1]['ID'][0]}"
@@ -42,7 +44,7 @@ def OSPF(tn, network, router):
     writeLine(tn, "exit")
 
 def RIP_if(tn, network, router, interface):
-    if interface[1] == "Loopback1" or network["routers"][interface[0][0]-1]["AS"] == network["routers"][router-1]["AS"]:
+    if interface["name"] == "Loopback1" or network["routers"][interface["neighbor"][0]-1]["AS"] == network["routers"][router-1]["AS"]:
         writeLine(tn, "ipv6 rip BeginRIP enable")
 
 def RIP(tn):
@@ -68,8 +70,8 @@ def BGP(tn, network, router):
             # iBGP
             if network["routers"][neighbor-1]["AS"] == network["routers"][router-1]["AS"]:
                 for interface in network["routers"][neighbor-1]["interface"]:
-                    if "Loopback" in interface[1]:
-                        neighbor_address = interface[2]
+                    if "Loopback" in interface["name"]:
+                        neighbor_address = interface["address"][0]
                         break
                 writeLine(tn, f"neighbor {neighbor_address} remote-as {network['routers'][neighbor-1]['AS']}")
                 writeLine(tn, f"neighbor {neighbor_address} update-source Loopback1")
@@ -78,8 +80,8 @@ def BGP(tn, network, router):
             # eBGP
             elif neighbor in network["adjDic"][router]:
                 for interface in network["routers"][neighbor-1]["interface"]:
-                    if router in interface[0]:
-                        neighbor_address = interface[2]
+                    if router in interface["neighbor"]:
+                        neighbor_address = interface["address"][0]
                         break
                 writeLine(tn, f"neighbor {neighbor_address} remote-as {network['routers'][neighbor-1]['AS']}")
                 neighbor_addresses["eBGP"].append((neighbor_address,neighbor))
@@ -165,7 +167,7 @@ def config_router(network, routerID):
     writeLine(tn, "conf t")
     writeLine(tn, "ipv6 unicast-routing")
     for interface in network["routers"][routerID-1]["interface"]:
-        if interface[0] != [] or "Loopback" in interface[1]:
+        if interface["neighbor"] != [] or "Loopback" in interface["name"]:
             addressing_if(tn, interface)
             if "RIP" in network["AS"][network["routers"][routerID-1]["AS"]-1]["IGP"]:
                 RIP_if(tn, network, routerID, interface)
