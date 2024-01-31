@@ -160,7 +160,7 @@ def BGP_Routemap(file, tn, network,router):
         writeLine(file, tn, "exit")
 
 def config_router(network, routerID):
-    fileName = f"log{routerID}" #We create a logging file
+    fileName = f"logs/log{routerID}" #We create a logging file
     if os.path.exists(fileName):
         os.remove(fileName)
     file = open(fileName, "x")
