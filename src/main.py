@@ -2,9 +2,6 @@ from filesIO import readJson
 from IPattribution import attributeIP
 from networkConfig import config_router
 import threading
-import os
-
-
 
 def main():
 
