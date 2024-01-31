@@ -160,7 +160,7 @@ def BGP_Routemap(file, tn, network,router):
         writeLine(file, tn, "exit")
 
 def config_router(network, routerID):
-    fileName = f"log{routerID}" #We create a logging file
+    fileName = f"logs/log{routerID}" #We create a logging file
     if os.path.exists(fileName):
         os.remove(fileName)
     file = open(fileName, "x")
@@ -169,6 +169,7 @@ def config_router(network, routerID):
         port = network["routers"][routerID-1]["Port"]
         host = "localhost"
         tn = telnetlib.Telnet(host, port)
+        writeLine(file, tn, "")
         writeLine(file, tn, "enable")
         writeLine(file, tn, "write erase") #To erase current configuration
         writeLine(file, tn, "") #To confirm the configuration deletion
