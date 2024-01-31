@@ -60,4 +60,4 @@ A dictonnary of dictionnaries referencing different constants and norms for ever
 
 ## How to use 
 
-Setup the network on GNS3 according to the network intent. Before executing the program, you must have the network started, as well as a console opened on every router.
+Setup the network on GNS3 according to the network intent. Before executing the program (launching main.py), you must have the network started, as well as a console opened on every router.
