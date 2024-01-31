@@ -9,7 +9,7 @@ import os
 def main():
 
     # Récupération des informations du réseau
-    network = readJson('..\Network_Intent.json')
+    network = readJson(r"./Network_Intent.json")
 
     # Attribution des IP
     attributeIP(network)
