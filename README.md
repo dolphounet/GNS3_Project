@@ -23,9 +23,10 @@ List of different dictionnaries representing one router and it's multiple caract
 
   - A strictly positive integer, represents the AS of the router _(The AS needs to exist in the AS list)_
 
-3. "interface" - A list containing :
-  - A list of the ID of the router(s) connected to an interface _(the program currently only accepts one connected router per interface)_
+3. "interface" - A list of dictionnary, each containing :
+  - A list of the ID of the router connected to an interface _(the program currently only accepts one connected router per interface)_
   - A string representing the interface name in the router environnement
+  - The OSPF metric corresponding to the interface
 
 4. "Port" : 
   - A integer which correspond to the port given by GNS3 to the router
@@ -45,9 +46,10 @@ List of dictionnaries representing the AS(s) in the Network.
   - The AS loopback network ipv6 mask
 
 4. "IGP" 
-- A list containing as many strings as Interior Gateway Protocols in the AS, for the now the possible values are :
-
-  -- "RIP", "OSPF"
+  - A list containing as many strings as Interior Gateway Protocols in the AS, for the now the possible values are :
+    -- "RIP", "OSPF"
+5. "Relations"
+  - A dictionnary with keys representing neighbor ASs and the values being either "provider", "client", or "peer"
 
 ### Constants
 
