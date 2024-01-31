@@ -2,13 +2,14 @@ from filesIO import readJson
 from IPattribution import attributeIP
 from networkConfig import config_router
 import threading
+import os
 
 
 
 def main():
 
     # Récupération des informations du réseau
-    network = readJson('Network_Intent.json')
+    network = readJson('..\Network_Intent.json')
 
     # Attribution des IP
     attributeIP(network)
@@ -21,6 +22,7 @@ def main():
 
     for thread in threads :
         thread.join()
+
 if __name__ == "__main__":
     main()
 
